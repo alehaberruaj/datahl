@@ -396,6 +396,8 @@ function parseValues(rows) {
   for (let i = hi + 1; i < rows.length; i++) {
     const [fecha, merkaz, cantStr, anioStr, mesStr, semanaStr] = rows[i];
     if (!fecha || !merkaz) continue;
+    const ALIASES = { 'Beit Israel': 'Metzadá' };
+    const merkazNorm = ALIASES[String(merkaz).trim()] ?? String(merkaz).trim();
     const cant = parseFloat(String(cantStr||'0').replace(',','.')) || 0;
     const parts = String(fecha).split('/');
     if (parts.length !== 3) continue;
@@ -405,7 +407,7 @@ function parseValues(rows) {
     const anio = parseInt(anioStr) || dateObj.getFullYear();
     const mes  = parseInt(mesStr)  || (dateObj.getMonth() + 1);
     const semana = parseInt(semanaStr) || 0;
-    data.push({ fecha: String(fecha).trim(), dateObj, merkaz: String(merkaz).trim(), cantidad: cant, anio, mes, semana });
+    data.push({ fecha: String(fecha).trim(), dateObj, merkaz: merkazNorm, cantidad: cant, anio, mes, semana });
   }
   return data;
 }
