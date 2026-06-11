@@ -3,222 +3,198 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard de Asistencia — Merkazim</title>
+  <title>Dashboard — Asistencia Merkazim</title>
   <script src="https://accounts.google.com/gsi/client"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
-      min-height: 100vh;
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1e2a3a;
+      --border: #1e3a5f;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --accent: #3b82f6;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
     }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+    /* ── Header ── */
     header {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border-bottom: 1px solid #334155;
-      padding: 1.5rem 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      background: linear-gradient(135deg, #0f1f3d 0%, #0a0e1a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex; align-items: center; gap: 1rem;
     }
-    header h1 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
-    header p { font-size: 0.85rem; color: #94a3b8; margin-top: 0.2rem; }
-    .badge {
-      margin-left: auto;
-      font-size: 0.75rem;
-      background: #1e40af22;
-      border: 1px solid #3b82f6;
-      color: #60a5fa;
-      padding: 0.3rem 0.7rem;
-      border-radius: 999px;
+    .logo { font-size: 1.4rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03em; }
+    .logo span { color: var(--accent); }
+    header p { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+    .chip {
+      font-size: 0.7rem; padding: 0.25rem 0.65rem; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--muted);
     }
-    #status-badge {
-      font-size: 0.75rem;
-      padding: 0.3rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid #475569;
-      color: #94a3b8;
-    }
+    .chip.live { border-color: var(--green); color: #34d399; background: #10b98111; }
     #btn-logout {
-      font-size: 0.75rem;
-      padding: 0.3rem 0.8rem;
-      border-radius: 999px;
-      border: 1px solid #475569;
-      background: transparent;
-      color: #94a3b8;
-      cursor: pointer;
-      display: none;
+      font-size: 0.75rem; padding: 0.3rem 0.8rem; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      cursor: pointer; display: none; transition: all 0.15s;
     }
-    #btn-logout:hover { border-color: #ef4444; color: #f87171; }
+    #btn-logout:hover { border-color: var(--red); color: #f87171; }
 
-    /* ── Login screen ── */
+    /* ── Login ── */
     #login-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 70vh;
-      gap: 1.5rem;
-      text-align: center;
-      padding: 2rem;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 80vh; gap: 1.5rem; text-align: center; padding: 2rem;
     }
-    #login-screen h2 { font-size: 1.25rem; color: #f1f5f9; }
-    #login-screen p { color: #64748b; max-width: 360px; line-height: 1.6; font-size: 0.9rem; }
-    #google-btn-container button {
-      background: white;
-      color: #1f2937;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      transition: box-shadow 0.15s;
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 1.25rem; padding: 2.5rem 3rem; max-width: 400px; width: 100%;
     }
-    #google-btn-container button:hover { box-shadow: 0 0 0 3px #3b82f644; }
+    .login-card h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .login-card p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    #btn-google-login {
+      width: 100%; background: white; color: #1f2937; border: none;
+      padding: 0.75rem 1.5rem; border-radius: 0.6rem; font-size: 0.95rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 0.75rem; transition: box-shadow 0.15s;
+    }
+    #btn-google-login:hover { box-shadow: 0 0 0 3px #3b82f644; }
 
     /* ── Loading ── */
     #loading {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      min-height: 50vh;
-      flex-direction: column;
-      gap: 1rem;
-      color: #64748b;
+      display: none; align-items: center; justify-content: center;
+      min-height: 60vh; flex-direction: column; gap: 1rem; color: var(--muted);
     }
     .spinner {
-      width: 2rem; height: 2rem;
-      border: 3px solid #334155;
-      border-top-color: #3b82f6;
-      border-radius: 50%;
+      width: 2rem; height: 2rem; border: 3px solid var(--surface2);
+      border-top-color: var(--accent); border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .error-box { color: #f87171; text-align: center; padding: 2rem; font-size: 0.9rem; line-height: 1.7; }
+    .error-box { color: #f87171; text-align: center; padding: 2rem; font-size: 0.9rem; line-height: 1.7; max-width: 480px; }
 
-    /* ── Controls ── */
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1.25rem 2rem;
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
-      align-items: flex-end;
-    }
-    .control-group { display: flex; flex-direction: column; gap: 0.3rem; }
-    .control-group label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
-    select, button {
-      background: #0f1117;
-      border: 1px solid #334155;
-      color: #e2e8f0;
-      padding: 0.5rem 0.8rem;
-      border-radius: 0.4rem;
-      font-size: 0.875rem;
-      cursor: pointer;
-    }
-    select:focus { outline: none; border-color: #3b82f6; }
-    button.primary {
-      background: #1d4ed8;
-      border-color: #2563eb;
-      color: white;
-      font-weight: 600;
-      transition: background 0.15s;
-    }
-    button.primary:hover { background: #2563eb; }
-    button.secondary { background: #1e293b; border-color: #475569; color: #94a3b8; font-weight: 400; }
-    button.secondary:hover { background: #334155; }
+    /* ── App ── */
+    #app { display: none; }
 
-    .merkaz-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      padding: 0.75rem 2rem;
-      background: #1a2332;
-      border-bottom: 1px solid #334155;
+    /* ── Filter bar ── */
+    .filterbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;
     }
-    .pill {
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      border: 1px solid;
-      cursor: pointer;
-      transition: opacity 0.15s;
-      user-select: none;
+    .filterbar label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: -0.3rem; }
+    select {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.4rem 0.7rem; border-radius: 0.4rem; font-size: 0.8rem; cursor: pointer;
     }
-    .pill.off { opacity: 0.3; }
+    select:focus { outline: none; border-color: var(--accent); }
+    .sep { width: 1px; height: 1.5rem; background: var(--border); }
+    .pill-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .mpill {
+      padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem;
+      border: 1px solid; cursor: pointer; transition: opacity 0.15s; user-select: none;
+    }
+    .mpill.off { opacity: 0.25; }
+    .btn {
+      padding: 0.4rem 0.9rem; border-radius: 0.4rem; font-size: 0.8rem;
+      cursor: pointer; border: 1px solid; font-weight: 600; transition: all 0.15s;
+    }
+    .btn-primary { background: var(--accent); border-color: #2563eb; color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--muted); font-weight: 400; }
+    .btn-ghost:hover { background: var(--surface2); }
 
+    /* ── KPIs ── */
     .kpi-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      padding: 1.25rem 2rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem; padding: 1.25rem 2rem;
     }
     .kpi {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 0.75rem;
-      padding: 1rem 1.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 0.75rem; padding: 1rem 1.25rem;
     }
-    .kpi-label { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-    .kpi-value { font-size: 1.8rem; font-weight: 700; color: #f1f5f9; margin-top: 0.2rem; }
-    .kpi-sub { font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem; }
+    .kpi-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .kpi-value { font-size: 1.75rem; font-weight: 800; color: #f1f5f9; margin-top: 0.15rem; line-height: 1; }
+    .kpi-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+    .kpi-delta { font-size: 0.72rem; margin-top: 0.3rem; font-weight: 600; }
+    .kpi-delta.up { color: var(--green); }
+    .kpi-delta.down { color: var(--red); }
 
-    .charts {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-      padding: 0 2rem 2rem;
+    /* ── Sections ── */
+    .sections { padding: 0 2rem 3rem; display: flex; flex-direction: column; gap: 2rem; }
+    .section-title {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.75rem;
+    }
+    .chart-row {
+      display: grid; grid-template-columns: 1fr; gap: 1rem;
+    }
+    @media (min-width: 960px) {
+      .chart-row { grid-template-columns: 2fr 1fr; }
     }
     .chart-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 0.75rem;
-      padding: 1.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 0.875rem; padding: 1.25rem;
     }
-    .chart-card h2 {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #cbd5e1;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    canvas { max-height: 380px; }
+    .chart-card h2 { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.25rem; }
+    .chart-card .subtitle { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
+    canvas { max-height: 320px; }
 
-    @media (min-width: 900px) {
-      .charts { grid-template-columns: 1fr 1fr; }
-      .chart-full { grid-column: 1 / -1; }
+    /* ── Insight panel ── */
+    .insight {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 0.875rem; padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
     }
+    .insight h3 { font-size: 0.8rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.05em; }
+    .insight p { font-size: 0.82rem; color: #94a3b8; line-height: 1.65; }
+    .insight-stat {
+      background: var(--surface); border-radius: 0.5rem;
+      padding: 0.6rem 0.85rem; font-size: 0.8rem;
+    }
+    .insight-stat .label { color: var(--muted); font-size: 0.7rem; }
+    .insight-stat .val { color: #f1f5f9; font-weight: 700; font-size: 1rem; margin-top: 0.1rem; }
+
+    /* ── Health bars ── */
+    .health-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .health-item { display: flex; flex-direction: column; gap: 0.2rem; }
+    .health-header { display: flex; justify-content: space-between; font-size: 0.78rem; }
+    .health-name { color: var(--text); font-weight: 600; }
+    .health-pct { font-weight: 700; }
+    .health-pct.green { color: var(--green); }
+    .health-pct.yellow { color: var(--yellow); }
+    .health-pct.red { color: var(--red); }
+    .health-bar-bg { height: 6px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+    .health-bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s; }
+    .health-detail { font-size: 0.68rem; color: var(--muted); }
   </style>
 </head>
 <body>
 
 <header>
   <div>
-    <h1>📊 Dashboard — Merkazim</h1>
-    <p>Asistencia semanal por merkaz</p>
+    <div class="logo">Dash<span>Tnu'a</span></div>
+    <p>Análisis de asistencia · Merkazim</p>
   </div>
-  <span class="badge">Live · Google Sheets</span>
-  <span id="status-badge">—</span>
-  <button id="btn-logout">Cerrar sesión</button>
+  <div class="header-right">
+    <span class="chip live" id="live-chip" style="display:none">● Live</span>
+    <span class="chip" id="status-chip">—</span>
+    <button id="btn-logout">Cerrar sesión</button>
+  </div>
 </header>
 
 <!-- Login -->
 <div id="login-screen">
-  <h2>Iniciá sesión para ver el dashboard</h2>
-  <p>Usá la cuenta de Google que tiene acceso al spreadsheet de asistencia.</p>
-  <div id="google-btn-container">
+  <div class="login-card">
+    <h2>Dashboard de Asistencia</h2>
+    <p>Iniciá sesión con la cuenta de Google que tiene acceso al spreadsheet para ver los datos.</p>
     <button id="btn-google-login">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Iniciar sesión con Google
     </button>
   </div>
@@ -231,77 +207,147 @@
 </div>
 
 <!-- App -->
-<div id="app" style="display:none">
-  <div class="controls">
-    <div class="control-group">
-      <label>Año</label>
-      <select id="sel-year"><option value="all">Todos</option></select>
+<div id="app">
+
+  <div class="filterbar">
+    <label>Año</label>
+    <select id="sel-year"><option value="all">Todos</option></select>
+    <div class="sep"></div>
+    <label>Ceros</label>
+    <select id="sel-zeros">
+      <option value="no">Excluir feriados/vacaciones</option>
+      <option value="yes">Incluir</option>
+    </select>
+    <div class="sep"></div>
+    <div class="pill-bar" id="pills"></div>
+    <div style="margin-left:auto; display:flex; gap:0.5rem">
+      <button class="btn btn-ghost" id="btn-reset-zoom">↺ Zoom</button>
+      <button class="btn btn-primary" id="btn-refresh">↺ Actualizar</button>
     </div>
-    <div class="control-group">
-      <label>Agrupar por</label>
-      <select id="sel-group">
-        <option value="week">Semana</option>
-        <option value="month">Mes</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Incluir ceros</label>
-      <select id="sel-zeros">
-        <option value="no">No (feriados / vacaciones)</option>
-        <option value="yes">Sí</option>
-      </select>
-    </div>
-    <button class="primary" id="btn-refresh">↺ Actualizar</button>
-    <button class="secondary" id="btn-reset-zoom">Reset zoom</button>
   </div>
 
-  <div class="merkaz-pills" id="pills"></div>
   <div class="kpi-row" id="kpis"></div>
 
-  <div class="charts">
-    <div class="chart-card chart-full">
-      <h2>Asistencia total por semana</h2>
-      <canvas id="chart-total"></canvas>
+  <div class="sections">
+
+    <!-- 1. Tendencia mensual -->
+    <div>
+      <div class="section-title">01 · Tendencia general</div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h2>Asistencia total mensual</h2>
+          <div class="subtitle">Suma de todos los merkazim por mes — excluye feriados y vacaciones</div>
+          <canvas id="chart-monthly"></canvas>
+        </div>
+        <div class="insight" id="insight-monthly">
+          <h3>¿Qué muestra?</h3>
+          <p>La salud general del movimiento mes a mes. Un mes con muchos feriados o vacaciones tendrá naturalmente menos asistencia.</p>
+          <h3>Conclusiones</h3>
+          <p id="ins-monthly-text">Calculando…</p>
+        </div>
+      </div>
     </div>
-    <div class="chart-card chart-full">
-      <h2>Evolución por merkaz</h2>
-      <canvas id="chart-lines"></canvas>
+
+    <!-- 2. Comparación anual -->
+    <div>
+      <div class="section-title">02 · Comparación entre años</div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h2>Asistencia total por semana del año</h2>
+          <div class="subtitle">Cada línea es un año — mismo eje horizontal permite comparar la misma época</div>
+          <canvas id="chart-annual"></canvas>
+        </div>
+        <div class="insight">
+          <h3>¿Qué muestra?</h3>
+          <p>Si en la semana 15 de este año hay más o menos asistencia que en la semana 15 del año anterior. Es la mejor forma de ver si estamos creciendo o decreciendo en términos reales.</p>
+          <h3>Cómo leerlo</h3>
+          <p>Una línea que está <strong style="color:#10b981">por encima</strong> de las anteriores indica crecimiento. Si está <strong style="color:#ef4444">por debajo</strong>, hay una caída respecto al año anterior en ese mismo período.</p>
+          <div class="insight-stat" id="ins-annual-stat"><div class="label">Calculando…</div></div>
+        </div>
+      </div>
     </div>
-    <div class="chart-card">
-      <h2>Promedio por merkaz</h2>
-      <canvas id="chart-bar"></canvas>
+
+    <!-- 3. Estado actual de merkazim -->
+    <div>
+      <div class="section-title">03 · Estado actual por merkaz</div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h2>Promedio últimas 8 peulot vs. máximo histórico</h2>
+          <div class="subtitle">Muestra cuánto del potencial real de cada merkaz se está aprovechando hoy</div>
+          <canvas id="chart-health"></canvas>
+        </div>
+        <div class="insight">
+          <h3>¿Qué muestra?</h3>
+          <p>Para cada merkaz se calcula el promedio de sus últimas 8 peulot con asistencia y se lo compara con su máximo histórico. Eso da un porcentaje de "estado actual".</p>
+          <h3>Semáforo</h3>
+          <p><strong style="color:#10b981">Verde (&gt;65%)</strong>: el merkaz está cerca de su mejor rendimiento.<br>
+          <strong style="color:#f59e0b">Amarillo (40–65%)</strong>: hay margen de mejora.<br>
+          <strong style="color:#ef4444">Rojo (&lt;40%)</strong>: el merkaz está significativamente por debajo de su capacidad.</p>
+          <div class="health-list" id="health-list"></div>
+        </div>
+      </div>
     </div>
-    <div class="chart-card">
-      <h2>Distribución de asistencia</h2>
-      <canvas id="chart-pie"></canvas>
+
+    <!-- 4. Evolución por merkaz -->
+    <div>
+      <div class="section-title">04 · Evolución individual</div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h2>Trayectoria de cada merkaz</h2>
+          <div class="subtitle">Usá los filtros arriba para ver uno o varios merkazim — zoom con rueda del mouse</div>
+          <canvas id="chart-lines"></canvas>
+        </div>
+        <div class="insight">
+          <h3>¿Qué muestra?</h3>
+          <p>La historia de asistencia de cada merkaz en el tiempo. Permite ver picos, caídas, y si la tendencia es ascendente o descendente.</p>
+          <h3>Tips</h3>
+          <p>• Desactivá merkazim grandes (Etgar, Shoresh) para ver mejor los chicos.<br>
+          • Hacé zoom arrastrando sobre el gráfico para un período específico.<br>
+          • Compará merkazim del mismo tamaño para un análisis justo.</p>
+          <div class="insight-stat" id="ins-lines-stat"><div class="label">Calculando…</div></div>
+        </div>
+      </div>
     </div>
+
+    <!-- 5. Distribución por mes del año -->
+    <div>
+      <div class="section-title">05 · Estacionalidad</div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h2>Promedio de asistencia por mes del año</h2>
+          <div class="subtitle">Promedio histórico de asistencia total según el mes — permite ver la estacionalidad</div>
+          <canvas id="chart-seasonal"></canvas>
+        </div>
+        <div class="insight">
+          <h3>¿Qué muestra?</h3>
+          <p>Qué meses son históricamente más fuertes o débiles para el movimiento. Muy útil para planificar actividades especiales o refuerzo en meses bajos.</p>
+          <h3>Qué esperar</h3>
+          <p>Es normal ver caídas en julio (vacaciones de invierno) y diciembre. Los picos suelen estar en los meses de mayor actividad del calendario judío y escolar.</p>
+          <div class="insight-stat" id="ins-seasonal-stat"><div class="label">Calculando…</div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script>
-const CLIENT_ID = '990613273884-7sbdj2gru1ttpldd42h5412ujn42h9l2.apps.googleusercontent.com';
-const SHEET_ID  = '1Vd1YCyll1M7M_r6mv8XHhVHiMDZuNk0lr2wR03elJp4';
+const CLIENT_ID  = '990613273884-7sbdj2gru1ttpldd42h5412ujn42h9l2.apps.googleusercontent.com';
+const SHEET_ID   = '1Vd1YCyll1M7M_r6mv8XHhVHiMDZuNk0lr2wR03elJp4';
 const SHEET_NAME = 'Tabla larga';
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
-const COLORS = [
-  '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6',
-  '#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16',
-  '#a855f7','#e11d48','#0ea5e9','#22c55e','#eab308','#6366f1'
-];
+const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#e11d48','#0ea5e9','#22c55e','#eab308','#6366f1'];
 
-let tokenClient;
-let accessToken = null;
-let allData = [];
-let merkazList = [];
-let activeM = new Set();
+let tokenClient, accessToken = null;
+let allData = [], merkazList = [], activeM = new Set();
 let charts = {};
 
-// ── Auth ───────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────
 window.onload = () => {
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
+    client_id: CLIENT_ID, scope: SCOPES,
     callback: async (resp) => {
       if (resp.error) { showError('Error de autenticación: ' + resp.error); return; }
       accessToken = resp.access_token;
@@ -309,30 +355,26 @@ window.onload = () => {
       await loadData();
     }
   });
-
-  document.getElementById('btn-google-login').addEventListener('click', () => {
-    tokenClient.requestAccessToken();
-  });
-
-  document.getElementById('btn-logout').addEventListener('click', () => {
-    google.accounts.oauth2.revoke(accessToken, () => {});
-    accessToken = null;
-    allData = [];
-    destroyAll();
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('btn-logout').style.display = 'none';
-    document.getElementById('status-badge').textContent = '—';
-  });
+  document.getElementById('btn-google-login').addEventListener('click', () => tokenClient.requestAccessToken());
+  document.getElementById('btn-logout').addEventListener('click', logout);
 };
 
-// ── Fetch from Sheets API ─────────────────────────────────────
+function logout() {
+  google.accounts.oauth2.revoke(accessToken, () => {});
+  accessToken = null; allData = []; destroyAll();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('btn-logout').style.display = 'none';
+  document.getElementById('live-chip').style.display = 'none';
+  document.getElementById('status-chip').textContent = '—';
+}
+
+// ── Fetch ─────────────────────────────────────────────────────
 async function loadData() {
   showLoading('Cargando datos desde Google Sheets…');
   try {
     const range = encodeURIComponent(`${SHEET_NAME}!A:G`);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`;
-    const res = await fetch(url, {
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     if (res.status === 401) { showError('Sesión expirada. Cerrá sesión y volvé a entrar.'); return; }
@@ -341,101 +383,59 @@ async function loadData() {
     allData = parseValues(json.values || []);
     if (!allData.length) { showError('No se encontraron datos en la pestaña "Tabla larga".'); return; }
     initApp();
-  } catch (e) {
-    showError('Error de red: ' + e.message);
-  }
+  } catch (e) { showError('Error de red: ' + e.message); }
 }
 
 function parseValues(rows) {
-  // Find header row
-  let headerIdx = -1;
+  let hi = -1;
   for (let i = 0; i < rows.length; i++) {
-    const r = rows[i];
-    if (r[0]?.toLowerCase().includes('fecha') && r[1]?.toLowerCase().includes('merkaz')) {
-      headerIdx = i; break;
-    }
+    if (rows[i][0]?.toLowerCase().includes('fecha') && rows[i][1]?.toLowerCase().includes('merkaz')) { hi = i; break; }
   }
-  if (headerIdx === -1) return [];
-
+  if (hi === -1) return [];
   const data = [];
-  for (let i = headerIdx + 1; i < rows.length; i++) {
-    const [fecha, merkaz, cantStr, anioStr, mesStr, semanaStr, obs] = rows[i];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const [fecha, merkaz, cantStr, anioStr, mesStr, semanaStr] = rows[i];
     if (!fecha || !merkaz) continue;
-
-    const cant = parseFloat(String(cantStr).replace(',', '.')) || 0;
-    const anio = parseInt(anioStr);
-    const mes  = parseInt(mesStr);
-
-    // Parse dd/mm/yyyy
+    const cant = parseFloat(String(cantStr||'0').replace(',','.')) || 0;
     const parts = String(fecha).split('/');
     if (parts.length !== 3) continue;
     const [d, m, y] = parts;
     const dateObj = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
     if (isNaN(dateObj)) continue;
-
-    data.push({
-      fecha: String(fecha).trim(),
-      dateObj,
-      merkaz: String(merkaz).trim(),
-      cantidad: cant,
-      anio: anio || dateObj.getFullYear(),
-      mes:  mes  || (dateObj.getMonth() + 1),
-      obs:  String(obs || '').trim()
-    });
+    const anio = parseInt(anioStr) || dateObj.getFullYear();
+    const mes  = parseInt(mesStr)  || (dateObj.getMonth() + 1);
+    const semana = parseInt(semanaStr) || 0;
+    data.push({ fecha: String(fecha).trim(), dateObj, merkaz: String(merkaz).trim(), cantidad: cant, anio, mes, semana });
   }
   return data;
 }
 
-// ── App init ──────────────────────────────────────────────────
+// ── Init app ──────────────────────────────────────────────────
 function initApp() {
   const years = [...new Set(allData.map(r => r.anio))].filter(Boolean).sort();
-  const selYear = document.getElementById('sel-year');
-  selYear.innerHTML = '<option value="all">Todos</option>';
-  years.forEach(y => {
-    const o = document.createElement('option');
-    o.value = y; o.textContent = y;
-    selYear.appendChild(o);
-  });
-  selYear.value = String(Math.max(...years));
+  const sel = document.getElementById('sel-year');
+  sel.innerHTML = '<option value="all">Todos los años</option>';
+  years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
+  sel.value = 'all';
 
   merkazList = [...new Set(allData.map(r => r.merkaz))].sort();
   activeM = new Set(merkazList);
-
   buildPills();
 
   document.getElementById('loading').style.display = 'none';
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  document.getElementById('live-chip').style.display = 'inline';
+  document.getElementById('status-chip').textContent = `${allData.length} registros · ${new Date().toLocaleTimeString('es')}`;
 
   render();
 
-  const badge = document.getElementById('status-badge');
-  badge.textContent = `${allData.length} registros · ${new Date().toLocaleTimeString('es')}`;
-  badge.style.borderColor = '#22c55e';
-  badge.style.color = '#86efac';
-
-  ['sel-year','sel-group','sel-zeros'].forEach(id =>
-    document.getElementById(id).addEventListener('change', () => { buildPills(); render(); })
-  );
+  ['sel-year','sel-zeros'].forEach(id => document.getElementById(id).addEventListener('change', () => { buildPills(); render(); }));
   document.getElementById('btn-refresh').addEventListener('click', loadData);
-  document.getElementById('btn-reset-zoom').addEventListener('click', () => {
-    Object.values(charts).forEach(c => { if (c.resetZoom) c.resetZoom(); });
-  });
+  document.getElementById('btn-reset-zoom').addEventListener('click', () => Object.values(charts).forEach(c => c.resetZoom?.()));
 }
 
-// ── UI helpers ────────────────────────────────────────────────
-function showLoading(msg) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('loading').style.display = 'flex';
-  document.getElementById('loading').innerHTML = `<div class="spinner"></div><p>${msg}</p>`;
-}
-
-function showError(msg) {
-  document.getElementById('loading').style.display = 'flex';
-  document.getElementById('loading').innerHTML = `<p class="error-box">⚠️ ${msg}</p>`;
-}
-
+// ── Filters ───────────────────────────────────────────────────
 function getFiltered() {
   const year  = document.getElementById('sel-year').value;
   const zeros = document.getElementById('sel-zeros').value;
@@ -448,20 +448,16 @@ function getFiltered() {
 }
 
 function buildPills() {
-  const container = document.getElementById('pills');
-  container.innerHTML = '';
+  const c = document.getElementById('pills'); c.innerHTML = '';
   merkazList.forEach((m, i) => {
-    const pill = document.createElement('span');
-    pill.className = 'pill' + (activeM.has(m) ? '' : ' off');
-    pill.textContent = m;
-    pill.style.borderColor = COLORS[i % COLORS.length];
-    pill.style.color = COLORS[i % COLORS.length];
-    pill.style.background = activeM.has(m) ? COLORS[i % COLORS.length] + '22' : 'transparent';
-    pill.addEventListener('click', () => {
-      if (activeM.has(m)) activeM.delete(m); else activeM.add(m);
-      buildPills(); render();
-    });
-    container.appendChild(pill);
+    const p = document.createElement('span');
+    p.className = 'mpill' + (activeM.has(m) ? '' : ' off');
+    p.textContent = m;
+    p.style.borderColor = COLORS[i % COLORS.length];
+    p.style.color = COLORS[i % COLORS.length];
+    p.style.background = activeM.has(m) ? COLORS[i % COLORS.length] + '18' : 'transparent';
+    p.onclick = () => { activeM.has(m) ? activeM.delete(m) : activeM.add(m); buildPills(); render(); };
+    c.appendChild(p);
   });
 }
 
@@ -476,43 +472,68 @@ function renderKPIs(data) {
   const max = nz.length ? Math.max(...nz.map(r => r.cantidad)) : 0;
   const maxR = nz.find(r => r.cantidad === max);
 
+  // Trend: compare last 4 weeks vs prior 4 weeks
+  const sorted = [...nz].sort((a,b) => b.dateObj - a.dateObj);
+  const last4dates = [...new Set(sorted.map(r => r.dateObj.toISOString().slice(0,10)))].slice(0,4);
+  const prev4dates = [...new Set(sorted.map(r => r.dateObj.toISOString().slice(0,10)))].slice(4,8);
+  const sumN = nz.filter(r => last4dates.includes(r.dateObj.toISOString().slice(0,10))).reduce((s,r)=>s+r.cantidad,0);
+  const sumP = nz.filter(r => prev4dates.includes(r.dateObj.toISOString().slice(0,10))).reduce((s,r)=>s+r.cantidad,0);
+  const delta = sumP > 0 ? Math.round((sumN - sumP) / sumP * 100) : 0;
+  const deltaStr = delta >= 0 ? `▲ +${delta}%` : `▼ ${delta}%`;
+  const deltaClass = delta >= 0 ? 'up' : 'down';
+
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">en el período</div></div>
-    <div class="kpi"><div class="kpi-label">Promedio por semana</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-sub">${dates.size} semanas</div></div>
-    <div class="kpi"><div class="kpi-label">Máximo puntual</div><div class="kpi-value">${max}</div><div class="kpi-sub">${maxR ? maxR.merkaz + ' · ' + maxR.fecha : ''}</div></div>
-    <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">de ${merkazList.length} totales</div></div>
+    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">${dates.size} peulot con asistencia</div></div>
+    <div class="kpi"><div class="kpi-label">Promedio por peulá</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${deltaClass}">${deltaStr} vs. 4 semanas atrás</div></div>
+    <div class="kpi"><div class="kpi-label">Máximo histórico</div><div class="kpi-value">${max}</div><div class="kpi-sub">${maxR ? maxR.merkaz + ' · ' + maxR.fecha : ''}</div></div>
+    <div class="kpi"><div class="kpi-label">Merkazim</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">de ${merkazList.length} en el filtro</div></div>
   `;
 }
 
 // ── Charts ────────────────────────────────────────────────────
 const CD = {
-  plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } },
+  plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 10, font: { size: 11 } } } },
   scales: {
-    x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { color: '#1e293b' } },
-    y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } }
+    x: { ticks: { color: '#475569', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e2a3a' } },
+    y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: '#1e3a5f33' } }
   }
 };
 
 function destroyAll() { Object.values(charts).forEach(c => c.destroy()); charts = {}; }
 
-function dateLabel(iso) {
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y.slice(2)}`;
-}
-
-function renderTotalLine(data) {
-  const byDate = {};
-  data.forEach(r => {
-    const k = r.dateObj.toISOString().slice(0,10);
-    byDate[k] = (byDate[k] || 0) + r.cantidad;
+// 1. Monthly trend
+function renderMonthly(data) {
+  const nz = data.filter(r => r.cantidad > 0);
+  const byMonth = {};
+  nz.forEach(r => {
+    const k = `${r.anio}-${String(r.mes).padStart(2,'0')}`;
+    byMonth[k] = (byMonth[k] || 0) + r.cantidad;
   });
-  const sorted = Object.keys(byDate).sort();
-  charts.total = new Chart(document.getElementById('chart-total'), {
-    type: 'bar',
+  const sorted = Object.keys(byMonth).sort();
+  const vals = sorted.map(k => byMonth[k]);
+
+  // Compute trend
+  if (sorted.length >= 2) {
+    const last = vals[vals.length-1], prev = vals[vals.length-2];
+    const pct = Math.round((last-prev)/prev*100);
+    const mes = sorted[sorted.length-1].split('-');
+    document.getElementById('ins-monthly-text').innerHTML =
+      `El último mes registrado (<strong>${MONTH_NAMES[parseInt(mes[1])-1]} ${mes[0]}</strong>) tuvo <strong>${last.toLocaleString('es')}</strong> asistentes en total, ` +
+      (pct >= 0
+        ? `un <strong style="color:#10b981">+${pct}%</strong> más que el mes anterior.`
+        : `un <strong style="color:#ef4444">${pct}%</strong> menos que el mes anterior.`) +
+      ` El promedio mensual histórico es <strong>${Math.round(vals.reduce((a,b)=>a+b,0)/vals.length).toLocaleString('es')}</strong> asistentes.`;
+  }
+
+  charts.monthly = new Chart(document.getElementById('chart-monthly'), {
+    type: 'line',
     data: {
-      labels: sorted.map(dateLabel),
-      datasets: [{ label: 'Total', data: sorted.map(k => byDate[k]),
-        backgroundColor: '#3b82f633', borderColor: '#3b82f6', borderWidth: 1.5, borderRadius: 3 }]
+      labels: sorted.map(k => { const [y,m] = k.split('-'); return `${MONTH_NAMES[parseInt(m)-1]} ${y}`; }),
+      datasets: [{
+        label: 'Total mensual', data: vals,
+        borderColor: '#3b82f6', backgroundColor: '#3b82f618',
+        borderWidth: 2.5, pointRadius: 3, tension: 0.35, fill: true
+      }]
     },
     options: { ...CD, plugins: { ...CD.plugins,
       zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } }
@@ -520,22 +541,156 @@ function renderTotalLine(data) {
   });
 }
 
-function renderLines(data) {
+// 2. Annual comparison (by week of year)
+function renderAnnual(data) {
+  const nz = data.filter(r => r.cantidad > 0 && r.semana > 0);
+  const years = [...new Set(nz.map(r => r.anio))].sort();
+  const byYearWeek = {};
+  nz.forEach(r => {
+    if (!byYearWeek[r.anio]) byYearWeek[r.anio] = {};
+    byYearWeek[r.anio][r.semana] = (byYearWeek[r.anio][r.semana] || 0) + r.cantidad;
+  });
+  const allWeeks = [...new Set(nz.map(r => r.semana))].sort((a,b)=>a-b);
+  const yearColors = ['#64748b','#94a3b8','#3b82f6','#10b981','#f59e0b','#ef4444'];
+
+  // Stat: latest year vs previous
+  const latestY = Math.max(...years);
+  const prevY = latestY - 1;
+  if (byYearWeek[latestY] && byYearWeek[prevY]) {
+    const commonWeeks = Object.keys(byYearWeek[latestY]).filter(w => byYearWeek[prevY][w]);
+    if (commonWeeks.length) {
+      const sumL = commonWeeks.reduce((s,w) => s + byYearWeek[latestY][w], 0);
+      const sumP = commonWeeks.reduce((s,w) => s + byYearWeek[prevY][w], 0);
+      const pct = Math.round((sumL-sumP)/sumP*100);
+      document.getElementById('ins-annual-stat').innerHTML =
+        `<div class="label">${latestY} vs ${prevY} (mismas semanas)</div><div class="val" style="color:${pct>=0?'#10b981':'#ef4444'}">${pct>=0?'▲ +':'▼ '}${pct}%</div>`;
+    }
+  }
+
+  charts.annual = new Chart(document.getElementById('chart-annual'), {
+    type: 'line',
+    data: {
+      labels: allWeeks.map(w => `Sem ${w}`),
+      datasets: years.map((y, i) => ({
+        label: String(y),
+        data: allWeeks.map(w => byYearWeek[y]?.[w] ?? null),
+        borderColor: yearColors[i % yearColors.length],
+        backgroundColor: 'transparent',
+        borderWidth: y === Math.max(...years) ? 3 : 1.5,
+        borderDash: y === Math.max(...years) ? [] : [],
+        pointRadius: 2, spanGaps: false, tension: 0.3
+      }))
+    },
+    options: { ...CD }
+  });
+}
+
+// 3. Health per merkaz
+function renderHealth(allDataFull) {
+  // Use ALL data (unfiltered by year) for health calculation
+  const nz = allDataFull.filter(r => r.cantidad > 0);
   const byM = {};
-  data.forEach(r => {
+  nz.forEach(r => {
+    if (!byM[r.merkaz]) byM[r.merkaz] = [];
+    byM[r.merkaz].push({ date: r.dateObj, qty: r.cantidad });
+  });
+
+  const health = {};
+  Object.entries(byM).forEach(([m, sessions]) => {
+    if (!activeM.has(m)) return;
+    sessions.sort((a,b) => a.date - b.date);
+    const last8 = sessions.slice(-8);
+    const avg8 = Math.round(last8.reduce((s,x) => s+x.qty, 0) / last8.length);
+    const histMax = Math.max(...sessions.map(s => s.qty));
+    const pct = Math.round(avg8 / histMax * 100);
+    health[m] = { avg8, histMax, pct };
+  });
+
+  const ms = Object.keys(health).sort((a,b) => health[b].pct - health[a].pct);
+  const pcts = ms.map(m => health[m].pct);
+
+  charts.health = new Chart(document.getElementById('chart-health'), {
+    type: 'bar',
+    data: {
+      labels: ms,
+      datasets: [{
+        label: '% del máximo histórico',
+        data: pcts,
+        backgroundColor: pcts.map(p => p >= 65 ? '#10b98199' : p >= 40 ? '#f59e0b99' : '#ef444499'),
+        borderColor:     pcts.map(p => p >= 65 ? '#10b981'   : p >= 40 ? '#f59e0b'   : '#ef4444'),
+        borderWidth: 1.5, borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      ...CD,
+      plugins: { ...CD.plugins, legend: { display: false } },
+      scales: {
+        x: { ...CD.scales.x, max: 100, ticks: { ...CD.scales.x.ticks, callback: v => v + '%' } },
+        y: { ...CD.scales.y }
+      }
+    }
+  });
+
+  // Health list
+  const list = document.getElementById('health-list');
+  list.innerHTML = '';
+  ms.forEach(m => {
+    const { avg8, histMax, pct } = health[m];
+    const cls = pct >= 65 ? 'green' : pct >= 40 ? 'yellow' : 'red';
+    const color = pct >= 65 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#ef4444';
+    list.innerHTML += `
+      <div class="health-item">
+        <div class="health-header">
+          <span class="health-name">${m}</span>
+          <span class="health-pct ${cls}">${pct}%</span>
+        </div>
+        <div class="health-bar-bg"><div class="health-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="health-detail">Últ. 8 peulot: ${avg8} prom. · Máx. histórico: ${histMax}</div>
+      </div>`;
+  });
+}
+
+// 4. Individual evolution (multi-line)
+function renderLines(data) {
+  const nz = data.filter(r => r.cantidad > 0);
+  const byM = {};
+  nz.forEach(r => {
     if (!byM[r.merkaz]) byM[r.merkaz] = {};
     const k = r.dateObj.toISOString().slice(0,10);
     byM[r.merkaz][k] = (byM[r.merkaz][k] || 0) + r.cantidad;
   });
-  const allDates = [...new Set(data.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
+  const allDates = [...new Set(nz.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
+
+  // Fastest growing merkaz
+  const trends = {};
+  [...activeM].forEach(m => {
+    if (!byM[m]) return;
+    const vals = allDates.map(d => byM[m][d] || null).filter(v => v !== null);
+    if (vals.length >= 4) {
+      const half = Math.floor(vals.length / 2);
+      const avgFirst = vals.slice(0, half).reduce((a,b)=>a+b,0)/half;
+      const avgLast  = vals.slice(-half).reduce((a,b)=>a+b,0)/half;
+      trends[m] = Math.round((avgLast - avgFirst) / avgFirst * 100);
+    }
+  });
+  const sorted = Object.entries(trends).sort((a,b) => b[1]-a[1]);
+  if (sorted.length) {
+    const [best, bestPct] = sorted[0];
+    const [worst, worstPct] = sorted[sorted.length-1];
+    document.getElementById('ins-lines-stat').innerHTML = `
+      <div class="label">Mayor crecimiento</div><div class="val" style="color:#10b981">${best} (${bestPct>=0?'+':''}${bestPct}%)</div>
+      <div class="label" style="margin-top:0.5rem">Mayor caída</div><div class="val" style="color:#ef4444">${worst} (${worstPct}%)</div>`;
+  }
+
   charts.lines = new Chart(document.getElementById('chart-lines'), {
     type: 'line',
     data: {
-      labels: allDates.map(dateLabel),
+      labels: allDates.map(d => { const [y,m,day] = d.split('-'); return `${day}/${m}/${y.slice(2)}`; }),
       datasets: [...activeM].filter(m => byM[m]).map(m => ({
         label: m,
         data: allDates.map(d => byM[m][d] ?? null),
-        borderColor: colorFor(m), backgroundColor: colorFor(m) + '22',
+        borderColor: colorFor(m), backgroundColor: colorFor(m) + '18',
         borderWidth: 2, pointRadius: 2, spanGaps: false, tension: 0.3
       }))
     },
@@ -545,40 +700,71 @@ function renderLines(data) {
   });
 }
 
-function renderBar(data) {
-  const nz = data.filter(r => r.cantidad > 0);
-  const byM = {}, cnt = {};
-  nz.forEach(r => { byM[r.merkaz] = (byM[r.merkaz]||0)+r.cantidad; cnt[r.merkaz]=(cnt[r.merkaz]||0)+1; });
-  const ms = [...activeM].filter(m => byM[m]);
-  charts.bar = new Chart(document.getElementById('chart-bar'), {
+// 5. Seasonal (by month)
+function renderSeasonal(data) {
+  const nz = data.filter(r => r.cantidad > 0 && r.mes >= 1 && r.mes <= 12);
+  const byMonth = {};
+  const countMonth = {};
+  nz.forEach(r => {
+    // Aggregate by year-month first to avoid counting same month-week multiple times
+    const ym = `${r.anio}-${r.mes}`;
+    if (!byMonth[ym]) { byMonth[ym] = 0; }
+    byMonth[ym] += r.cantidad;
+  });
+  // Average across years for each month
+  const monthTotals = {}, monthCounts = {};
+  Object.entries(byMonth).forEach(([ym, total]) => {
+    const m = parseInt(ym.split('-')[1]);
+    monthTotals[m] = (monthTotals[m] || 0) + total;
+    monthCounts[m] = (monthCounts[m] || 0) + 1;
+  });
+  const months = Array.from({length:12}, (_,i) => i+1);
+  const avgs = months.map(m => monthTotals[m] ? Math.round(monthTotals[m] / monthCounts[m]) : 0);
+
+  const maxM = months[avgs.indexOf(Math.max(...avgs.filter(v=>v>0)))];
+  const minM = months.filter(m => avgs[m-1]>0)[avgs.filter(v=>v>0).indexOf(Math.min(...avgs.filter(v=>v>0)))];
+  document.getElementById('ins-seasonal-stat').innerHTML =
+    `<div class="label">Mes más fuerte</div><div class="val" style="color:#10b981">${MONTH_NAMES[maxM-1]} (${Math.max(...avgs).toLocaleString('es')} prom.)</div>` +
+    (minM ? `<div class="label" style="margin-top:0.5rem">Mes más bajo (con actividad)</div><div class="val" style="color:#f59e0b">${MONTH_NAMES[minM-1]} (${Math.min(...avgs.filter(v=>v>0)).toLocaleString('es')} prom.)</div>` : '');
+
+  charts.seasonal = new Chart(document.getElementById('chart-seasonal'), {
     type: 'bar',
-    data: { labels: ms, datasets: [{ label: 'Promedio', data: ms.map(m => Math.round(byM[m]/cnt[m])),
-      backgroundColor: ms.map(m => colorFor(m)+'cc'), borderRadius: 4 }] },
-    options: { indexAxis: 'y', ...CD, plugins: { ...CD.plugins, legend: { display: false } } }
+    data: {
+      labels: MONTH_NAMES,
+      datasets: [{
+        label: 'Promedio mensual histórico',
+        data: avgs,
+        backgroundColor: avgs.map((v,i) => v === Math.max(...avgs) ? '#10b98199' : '#3b82f644'),
+        borderColor: avgs.map((v,i) => v === Math.max(...avgs) ? '#10b981' : '#3b82f6'),
+        borderWidth: 1.5, borderRadius: 4
+      }]
+    },
+    options: { ...CD, plugins: { ...CD.plugins, legend: { display: false } } }
   });
 }
 
-function renderPie(data) {
-  const nz = data.filter(r => r.cantidad > 0);
-  const byM = {};
-  nz.forEach(r => { byM[r.merkaz] = (byM[r.merkaz]||0)+r.cantidad; });
-  const ms = [...activeM].filter(m => byM[m]);
-  charts.pie = new Chart(document.getElementById('chart-pie'), {
-    type: 'doughnut',
-    data: { labels: ms, datasets: [{ data: ms.map(m => byM[m]),
-      backgroundColor: ms.map(m => colorFor(m)+'cc'), borderColor: '#0f1117', borderWidth: 2 }] },
-    options: { plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } } }
-  });
-}
-
+// ── Render all ────────────────────────────────────────────────
 function render() {
   destroyAll();
   const data = getFiltered();
   renderKPIs(data);
-  renderTotalLine(data);
+  renderMonthly(data);
+  renderAnnual(data);
+  renderHealth(allData); // always all years for health
   renderLines(data);
-  renderBar(data);
-  renderPie(data);
+  renderSeasonal(allData); // always all years for seasonality
+}
+
+// ── Utils ─────────────────────────────────────────────────────
+function showLoading(msg) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('loading').innerHTML = `<div class="spinner"></div><p>${msg}</p>`;
+}
+function showError(msg) {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('loading').innerHTML = `<p class="error-box">⚠️ ${msg}</p>`;
 }
 </script>
 </body>
