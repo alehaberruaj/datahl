@@ -571,17 +571,31 @@ function renderAnnual(data) {
 
 // 03 Health
 function renderHealth() {
-  const nz = allData.filter(r => r.cantidad > 0);
-  const byM = {};
-  nz.forEach(r => { if(!byM[r.merkaz]) byM[r.merkaz]=[]; byM[r.merkaz].push({date:r.dateObj,qty:r.cantidad}); });
+  // Last 8 Saturdays where ANY merkaz reported (active dates of the tnu'a)
+  const allDates = [...new Set(allData.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
+  const last8dates = allDates.slice(-8);
+
+  // Build lookup: merkaz → date → quantity
+  const byMDate = {};
+  allData.forEach(r => {
+    const k = r.dateObj.toISOString().slice(0,10);
+    if (!byMDate[r.merkaz]) byMDate[r.merkaz] = {};
+    byMDate[r.merkaz][k] = (byMDate[r.merkaz][k] || 0) + r.cantidad;
+  });
+
+  // Historical max per merkaz (all time, non-zero)
+  const histMaxM = {};
+  allData.filter(r => r.cantidad > 0).forEach(r => {
+    histMaxM[r.merkaz] = Math.max(histMaxM[r.merkaz] || 0, r.cantidad);
+  });
+
   const health = {};
-  Object.entries(byM).forEach(([m,sessions]) => {
-    if (!activeM.has(m)) return;
-    sessions.sort((a,b)=>a.date-b.date);
-    const last8 = sessions.slice(-8);
-    const avg8 = Math.round(last8.reduce((s,x)=>s+x.qty,0)/last8.length);
-    const histMax = Math.max(...sessions.map(s=>s.qty));
-    health[m] = { avg8, histMax, pct: Math.round(avg8/histMax*100) };
+  merkazList.filter(m => activeM.has(m)).forEach(m => {
+    const vals = last8dates.map(d => byMDate[m]?.[d] ?? 0); // 0 if didn't report
+    const avg8 = Math.round(vals.reduce((s,v)=>s+v,0) / 8);
+    const showed = vals.filter(v => v > 0).length; // how many of 8 they attended
+    const histMax = histMaxM[m] || 1;
+    health[m] = { avg8, histMax, showed, pct: Math.round(avg8 / histMax * 100) };
   });
   const ms = Object.keys(health).sort((a,b)=>health[b].pct-health[a].pct);
   const pcts = ms.map(m=>health[m].pct);
@@ -599,7 +613,7 @@ function renderHealth() {
     options: {
       indexAxis:'y', ...CD,
       plugins:{ ...CD.plugins, legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw}% del máximo (${health[ms[ctx.dataIndex]].avg8} prom. / ${health[ms[ctx.dataIndex]].histMax} máx.)` } }
+        tooltip:{ callbacks:{ label: ctx => { const h=health[ms[ctx.dataIndex]]; return ` ${ctx.raw}% — ${h.avg8} prom. · ${h.showed}/8 sábados · máx. hist. ${h.histMax}`; } } }
       },
       scales:{ x:{...CD.scales.x, max:100, ticks:{...CD.scales.x.ticks, callback:v=>v+'%'}}, y:{...CD.scales.y} }
     }
@@ -613,7 +627,7 @@ function renderHealth() {
     list.innerHTML += `<div class="health-item">
       <div class="health-header"><span class="health-name">${m}</span><span class="health-pct ${cls}">${pct}%</span></div>
       <div class="health-bar-bg"><div class="health-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-      <div class="health-detail">Últ. 8: ${avg8} prom. · Máx. histórico: ${histMax}</div>
+      <div class="health-detail">Últ. 8 sáb.: ${avg8} prom. · ${showed}/8 sáb. activos · Máx. hist.: ${histMax}</div>
     </div>`;
   });
 }
