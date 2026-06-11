@@ -456,7 +456,12 @@ function buildPills() {
     p.style.borderColor = COLORS[i % COLORS.length];
     p.style.color = COLORS[i % COLORS.length];
     p.style.background = activeM.has(m) ? COLORS[i % COLORS.length] + '18' : 'transparent';
-    p.onclick = () => { activeM.has(m) ? activeM.delete(m) : activeM.add(m); buildPills(); render(); };
+    p.onclick = () => {
+      const isSolo = activeM.size === 1 && activeM.has(m);
+      if (isSolo) { activeM = new Set(merkazList); } // restore all
+      else { activeM = new Set([m]); }               // solo this one
+      buildPills(); render();
+    };
     c.appendChild(p);
   });
 }
