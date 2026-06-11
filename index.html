@@ -492,7 +492,7 @@ function renderKPIs(data) {
 
   document.getElementById('kpis').innerHTML = `
     <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">${dates.size} peulot con asistencia</div></div>
-    <div class="kpi"><div class="kpi-label">Promedio por peulá</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 semanas atrás</div></div>
+    <div class="kpi"><div class="kpi-label">Promedio por sábado</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 semanas atrás</div></div>
     <div class="kpi"><div class="kpi-label">Máximo puntual</div><div class="kpi-value">${max}</div><div class="kpi-sub">${maxR?maxR.merkaz+' · '+maxR.fecha:''}</div></div>
     <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">${[...new Set(Object.values(merkCategories).filter((_,i)=>activeM.has(merkazList[i])))]}</div></div>
   `;
