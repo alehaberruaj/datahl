@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Asistencia — Merkazim</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid #334155;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
+    header p { font-size: 0.85rem; color: #94a3b8; margin-top: 0.2rem; }
+    .badge {
+      margin-left: auto;
+      font-size: 0.75rem;
+      background: #1e40af22;
+      border: 1px solid #3b82f6;
+      color: #60a5fa;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+    }
+    #status-badge {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #475569;
+      color: #94a3b8;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1.25rem 2rem;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      align-items: flex-end;
+    }
+    .control-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .control-group label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    select, button {
+      background: #0f1117;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 0.5rem 0.8rem;
+      border-radius: 0.4rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: #3b82f6; }
+    button {
+      background: #1d4ed8;
+      border-color: #2563eb;
+      color: white;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    button:hover { background: #2563eb; }
+    button.secondary { background: #1e293b; border-color: #475569; color: #94a3b8; font-weight: 400; }
+    button.secondary:hover { background: #334155; }
+
+    .merkaz-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.75rem 2rem;
+      background: #1a2332;
+      border-bottom: 1px solid #334155;
+    }
+    .pill {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      user-select: none;
+    }
+    .pill.off { opacity: 0.3; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      padding: 1.25rem 2rem;
+    }
+    .kpi {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+    }
+    .kpi-label { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .kpi-value { font-size: 1.8rem; font-weight: 700; color: #f1f5f9; margin-top: 0.2rem; }
+    .kpi-sub { font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem; }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      padding: 0 2rem 2rem;
+    }
+    .chart-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+    .chart-card h2 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    canvas { max-height: 380px; }
+
+    @media (min-width: 900px) {
+      .charts { grid-template-columns: 1fr 1fr; }
+      .chart-full { grid-column: 1 / -1; }
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      flex-direction: column;
+      gap: 1rem;
+      color: #64748b;
+    }
+    .spinner {
+      width: 2rem; height: 2rem;
+      border: 3px solid #334155;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { color: #f87171; text-align: center; padding: 2rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Dashboard — Merkazim</h1>
+    <p>Asistencia semanal por merkaz</p>
+  </div>
+  <span class="badge">Live · Google Sheets</span>
+  <span id="status-badge">Cargando…</span>
+</header>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <p>Cargando datos desde Google Sheets…</p>
+</div>
+
+<div id="app" style="display:none">
+  <div class="controls">
+    <div class="control-group">
+      <label>Año</label>
+      <select id="sel-year">
+        <option value="all">Todos</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Agrupar por</label>
+      <select id="sel-group">
+        <option value="week">Semana</option>
+        <option value="month">Mes</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Incluir ceros</label>
+      <select id="sel-zeros">
+        <option value="no">No (feriados / vacaciones)</option>
+        <option value="yes">Sí</option>
+      </select>
+    </div>
+    <button id="btn-refresh">↺ Actualizar datos</button>
+    <button class="secondary" id="btn-reset-zoom">Reset zoom</button>
+  </div>
+
+  <div class="merkaz-pills" id="pills"></div>
+
+  <div class="kpi-row" id="kpis"></div>
+
+  <div class="charts">
+    <div class="chart-card chart-full">
+      <h2>Asistencia total por semana</h2>
+      <canvas id="chart-total"></canvas>
+    </div>
+    <div class="chart-card chart-full">
+      <h2>Evolución por merkaz</h2>
+      <canvas id="chart-lines"></canvas>
+    </div>
+    <div class="chart-card">
+      <h2>Promedio por merkaz (período seleccionado)</h2>
+      <canvas id="chart-bar"></canvas>
+    </div>
+    <div class="chart-card">
+      <h2>Distribución de asistencia por merkaz</h2>
+      <canvas id="chart-pie"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1Vd1YCyll1M7M_r6mv8XHhVHiMDZuNk0lr2wR03elJp4';
+const GID = '2032239544';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+
+const COLORS = [
+  '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6',
+  '#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16',
+  '#a855f7','#e11d48','#0ea5e9','#22c55e','#eab308','#6366f1'
+];
+
+let allData = [];
+let merkazList = [];
+let activeM = new Set();
+let charts = {};
+
+// ── fetch & parse ──────────────────────────────────────────────
+async function fetchData() {
+  // Use allorigins proxy to bypass CORS on Google Sheets CSV
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(CSV_URL)}`;
+  const res = await fetch(proxy);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  return parseCSV(json.contents);
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const rows = [];
+  // Find the header row for "Tabla larga": Fecha, Merkaz, Cantidad, Año, Mes, Semana
+  let headerIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const cols = splitCSVLine(lines[i]);
+    if (
+      cols[0]?.toLowerCase().includes('fecha') &&
+      cols[1]?.toLowerCase().includes('merkaz') &&
+      cols[2]?.toLowerCase().includes('cantidad')
+    ) {
+      headerIdx = i;
+      break;
+    }
+  }
+  if (headerIdx === -1) return [];
+
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const cols = splitCSVLine(lines[i]);
+    const fecha = cols[0]?.trim();
+    const merkaz = cols[1]?.trim();
+    const cantStr = cols[2]?.trim();
+    const anio = parseInt(cols[3]);
+    const mes = parseInt(cols[4]);
+    const semana = parseInt(cols[5]);
+    const obs = cols[6]?.trim() || '';
+
+    if (!fecha || !merkaz || fecha.toLowerCase() === 'fecha') continue;
+    // Stop if next table starts (empty merkaz or date looks weird)
+    if (!merkaz) continue;
+
+    const cant = parseFloat(cantStr?.replace(',', '.')) || 0;
+
+    // Parse date
+    let dateObj = null;
+    const parts = fecha.split('/');
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      dateObj = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    }
+    if (!dateObj || isNaN(dateObj)) continue;
+
+    rows.push({ fecha, dateObj, merkaz, cantidad: cant, anio: anio || dateObj.getFullYear(), mes: mes || (dateObj.getMonth()+1), semana, obs });
+  }
+  return rows;
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let c of line) {
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ',' && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── UI helpers ─────────────────────────────────────────────────
+function getFiltered() {
+  const year = document.getElementById('sel-year').value;
+  const zeros = document.getElementById('sel-zeros').value;
+  return allData.filter(r => {
+    if (year !== 'all' && r.anio !== parseInt(year)) return false;
+    if (zeros === 'no' && r.cantidad === 0) return false;
+    if (!activeM.has(r.merkaz)) return false;
+    return true;
+  });
+}
+
+function periodKey(r) {
+  const group = document.getElementById('sel-group').value;
+  if (group === 'month') return `${r.anio}-${String(r.mes).padStart(2,'0')}`;
+  // week key: ISO week approach – use dateObj
+  const d = r.dateObj;
+  return d.toISOString().slice(0, 10);  // use exact date as key then sort
+}
+
+function buildPills() {
+  const container = document.getElementById('pills');
+  container.innerHTML = '';
+  merkazList.forEach((m, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'pill' + (activeM.has(m) ? '' : ' off');
+    pill.textContent = m;
+    pill.style.borderColor = COLORS[i % COLORS.length];
+    pill.style.color = COLORS[i % COLORS.length];
+    pill.style.background = activeM.has(m) ? COLORS[i % COLORS.length] + '22' : 'transparent';
+    pill.addEventListener('click', () => {
+      if (activeM.has(m)) activeM.delete(m); else activeM.add(m);
+      buildPills();
+      render();
+    });
+    container.appendChild(pill);
+  });
+}
+
+function colorFor(m) {
+  return COLORS[merkazList.indexOf(m) % COLORS.length];
+}
+
+// ── KPIs ───────────────────────────────────────────────────────
+function renderKPIs(data) {
+  const nonZero = data.filter(r => r.cantidad > 0);
+  const total = nonZero.reduce((s, r) => s + r.cantidad, 0);
+  const avg = nonZero.length ? Math.round(total / new Set(nonZero.map(r => r.dateObj.toISOString().slice(0,10))).size) : 0;
+  const max = nonZero.length ? Math.max(...nonZero.map(r => r.cantidad)) : 0;
+  const maxR = nonZero.find(r => r.cantidad === max);
+  const uniqueDates = new Set(nonZero.map(r => r.dateObj.toISOString().slice(0,10))).size;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">en el período</div></div>
+    <div class="kpi"><div class="kpi-label">Promedio por semana</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-sub">${uniqueDates} semanas</div></div>
+    <div class="kpi"><div class="kpi-label">Máximo puntual</div><div class="kpi-value">${max}</div><div class="kpi-sub">${maxR ? maxR.merkaz + ' · ' + maxR.fecha : ''}</div></div>
+    <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">de ${merkazList.length} totales</div></div>
+  `;
+}
+
+// ── Charts ─────────────────────────────────────────────────────
+const chartDefaults = {
+  color: '#94a3b8',
+  plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } },
+  scales: {
+    x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { color: '#1e293b' } },
+    y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } }
+  }
+};
+
+function destroyAll() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function renderTotalLine(data) {
+  // Aggregate by period key (date), sum all merkazim
+  const byDate = {};
+  data.forEach(r => {
+    const k = r.dateObj.toISOString().slice(0,10);
+    byDate[k] = (byDate[k] || 0) + r.cantidad;
+  });
+  const sorted = Object.keys(byDate).sort();
+  const labels = sorted.map(d => {
+    const [y,m,day] = d.split('-');
+    return `${day}/${m}/${y.slice(2)}`;
+  });
+  const values = sorted.map(k => byDate[k]);
+
+  const ctx = document.getElementById('chart-total').getContext('2d');
+  charts.total = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Total',
+        data: values,
+        backgroundColor: '#3b82f633',
+        borderColor: '#3b82f6',
+        borderWidth: 1.5,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      ...chartDefaults,
+      plugins: {
+        ...chartDefaults.plugins,
+        zoom: {
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+          pan: { enabled: true, mode: 'x' }
+        }
+      },
+      scales: { ...chartDefaults.scales }
+    }
+  });
+}
+
+function renderLines(data) {
+  // One line per merkaz, sorted by date
+  const byMerkaz = {};
+  data.forEach(r => {
+    if (!byMerkaz[r.merkaz]) byMerkaz[r.merkaz] = {};
+    const k = r.dateObj.toISOString().slice(0,10);
+    byMerkaz[r.merkaz][k] = (byMerkaz[r.merkaz][k] || 0) + r.cantidad;
+  });
+
+  const allDates = [...new Set(data.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
+  const labels = allDates.map(d => { const [y,m,day] = d.split('-'); return `${day}/${m}/${y.slice(2)}`; });
+
+  const datasets = [...activeM].filter(m => byMerkaz[m]).map(m => ({
+    label: m,
+    data: allDates.map(d => byMerkaz[m][d] ?? null),
+    borderColor: colorFor(m),
+    backgroundColor: colorFor(m) + '22',
+    borderWidth: 2,
+    pointRadius: 2,
+    spanGaps: false,
+    tension: 0.3,
+  }));
+
+  const ctx = document.getElementById('chart-lines').getContext('2d');
+  charts.lines = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      ...chartDefaults,
+      plugins: {
+        ...chartDefaults.plugins,
+        zoom: {
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+          pan: { enabled: true, mode: 'x' }
+        }
+      }
+    }
+  });
+}
+
+function renderBar(data) {
+  const nonZero = data.filter(r => r.cantidad > 0);
+  const byM = {};
+  const countM = {};
+  nonZero.forEach(r => {
+    byM[r.merkaz] = (byM[r.merkaz] || 0) + r.cantidad;
+    countM[r.merkaz] = (countM[r.merkaz] || 0) + 1;
+  });
+  const ms = [...activeM].filter(m => byM[m]);
+  const avgs = ms.map(m => Math.round(byM[m] / countM[m]));
+
+  const ctx = document.getElementById('chart-bar').getContext('2d');
+  charts.bar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ms,
+      datasets: [{ label: 'Promedio', data: avgs, backgroundColor: ms.map(m => colorFor(m) + 'cc'), borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y',
+      ...chartDefaults,
+      plugins: { ...chartDefaults.plugins, legend: { display: false } },
+    }
+  });
+}
+
+function renderPie(data) {
+  const nonZero = data.filter(r => r.cantidad > 0);
+  const byM = {};
+  nonZero.forEach(r => { byM[r.merkaz] = (byM[r.merkaz] || 0) + r.cantidad; });
+  const ms = [...activeM].filter(m => byM[m]);
+  const totals = ms.map(m => byM[m]);
+
+  const ctx = document.getElementById('chart-pie').getContext('2d');
+  charts.pie = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ms,
+      datasets: [{ data: totals, backgroundColor: ms.map(m => colorFor(m) + 'cc'), borderColor: '#0f1117', borderWidth: 2 }]
+    },
+    options: {
+      plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } }
+    }
+  });
+}
+
+// ── Main render ────────────────────────────────────────────────
+function render() {
+  destroyAll();
+  const data = getFiltered();
+  renderKPIs(data);
+  renderTotalLine(data);
+  renderLines(data);
+  renderBar(data);
+  renderPie(data);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+async function init() {
+  const statusBadge = document.getElementById('status-badge');
+  try {
+    allData = await fetchData();
+    if (!allData.length) throw new Error('No se encontraron datos en la tabla larga.');
+
+    // Populate years
+    const years = [...new Set(allData.map(r => r.anio))].filter(Boolean).sort();
+    const selYear = document.getElementById('sel-year');
+    years.forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      selYear.appendChild(opt);
+    });
+    // Default to latest year
+    selYear.value = String(Math.max(...years));
+
+    // Merkazim
+    merkazList = [...new Set(allData.map(r => r.merkaz))].sort();
+    activeM = new Set(merkazList);
+
+    buildPills();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+
+    render();
+
+    statusBadge.textContent = `${allData.length} registros · ${new Date().toLocaleTimeString('es')}`;
+    statusBadge.style.borderColor = '#22c55e';
+    statusBadge.style.color = '#86efac';
+
+    // Event listeners
+    ['sel-year','sel-group','sel-zeros'].forEach(id =>
+      document.getElementById(id).addEventListener('change', () => { buildPills(); render(); })
+    );
+    document.getElementById('btn-refresh').addEventListener('click', init);
+    document.getElementById('btn-reset-zoom').addEventListener('click', () => {
+      Object.values(charts).forEach(c => { if (c.resetZoom) c.resetZoom(); });
+    });
+
+  } catch (err) {
+    document.getElementById('loading').innerHTML = `<p class="error">⚠️ Error al cargar datos:<br>${err.message}</p>`;
+    statusBadge.textContent = 'Error';
+    statusBadge.style.color = '#f87171';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
