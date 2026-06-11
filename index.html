@@ -155,7 +155,7 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .error { color: #f87171; text-align: center; padding: 2rem; }
+    .error { color: #f87171; text-align: center; padding: 2rem; font-size: 0.9rem; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -242,12 +242,22 @@ let charts = {};
 
 // ── fetch & parse ──────────────────────────────────────────────
 async function fetchData() {
-  // Use allorigins proxy to bypass CORS on Google Sheets CSV
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(CSV_URL)}`;
-  const res = await fetch(proxy);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  return parseCSV(json.contents);
+  // gviz endpoint works directly for public sheets (no proxy needed)
+  const gvizUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+
+  let text;
+  try {
+    const res = await fetch(gvizUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    text = await res.text();
+  } catch (e) {
+    // fallback: corsproxy.io
+    const proxy = `https://corsproxy.io/?${encodeURIComponent(CSV_URL)}`;
+    const res2 = await fetch(proxy);
+    if (!res2.ok) throw new Error(`No se pudo cargar el sheet (${res2.status}). Asegurate de que el Google Sheet sea público ("Cualquier persona con el enlace puede ver").`);
+    text = await res2.text();
+  }
+  return parseCSV(text);
 }
 
 function parseCSV(text) {
@@ -279,7 +289,6 @@ function parseCSV(text) {
     const obs = cols[6]?.trim() || '';
 
     if (!fecha || !merkaz || fecha.toLowerCase() === 'fecha') continue;
-    // Stop if next table starts (empty merkaz or date looks weird)
     if (!merkaz) continue;
 
     const cant = parseFloat(cantStr?.replace(',', '.')) || 0;
@@ -320,14 +329,6 @@ function getFiltered() {
     if (!activeM.has(r.merkaz)) return false;
     return true;
   });
-}
-
-function periodKey(r) {
-  const group = document.getElementById('sel-group').value;
-  if (group === 'month') return `${r.anio}-${String(r.mes).padStart(2,'0')}`;
-  // week key: ISO week approach – use dateObj
-  const d = r.dateObj;
-  return d.toISOString().slice(0, 10);  // use exact date as key then sort
 }
 
 function buildPills() {
@@ -386,7 +387,6 @@ function destroyAll() {
 }
 
 function renderTotalLine(data) {
-  // Aggregate by period key (date), sum all merkazim
   const byDate = {};
   data.forEach(r => {
     const k = r.dateObj.toISOString().slice(0,10);
@@ -428,7 +428,6 @@ function renderTotalLine(data) {
 }
 
 function renderLines(data) {
-  // One line per merkaz, sorted by date
   const byMerkaz = {};
   data.forEach(r => {
     if (!byMerkaz[r.merkaz]) byMerkaz[r.merkaz] = {};
@@ -527,22 +526,25 @@ function render() {
 // ── Init ───────────────────────────────────────────────────────
 async function init() {
   const statusBadge = document.getElementById('status-badge');
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loading').innerHTML = '<div class="spinner"></div><p>Cargando datos desde Google Sheets…</p>';
+
   try {
     allData = await fetchData();
-    if (!allData.length) throw new Error('No se encontraron datos en la tabla larga.');
+    if (!allData.length) throw new Error('No se encontraron datos en la tabla larga. Verificá que el Google Sheet sea público (compartido como "Cualquier persona con el enlace puede ver").');
 
     // Populate years
     const years = [...new Set(allData.map(r => r.anio))].filter(Boolean).sort();
     const selYear = document.getElementById('sel-year');
+    selYear.innerHTML = '<option value="all">Todos</option>';
     years.forEach(y => {
       const opt = document.createElement('option');
       opt.value = y; opt.textContent = y;
       selYear.appendChild(opt);
     });
-    // Default to latest year
     selYear.value = String(Math.max(...years));
 
-    // Merkazim
     merkazList = [...new Set(allData.map(r => r.merkaz))].sort();
     activeM = new Set(merkazList);
 
@@ -557,7 +559,6 @@ async function init() {
     statusBadge.style.borderColor = '#22c55e';
     statusBadge.style.color = '#86efac';
 
-    // Event listeners
     ['sel-year','sel-group','sel-zeros'].forEach(id =>
       document.getElementById(id).addEventListener('change', () => { buildPills(); render(); })
     );
@@ -567,7 +568,7 @@ async function init() {
     });
 
   } catch (err) {
-    document.getElementById('loading').innerHTML = `<p class="error">⚠️ Error al cargar datos:<br>${err.message}</p>`;
+    document.getElementById('loading').innerHTML = `<p class="error">⚠️ Error al cargar datos:<br><br>${err.message}<br><br>Asegurate de que el Google Sheet sea público:<br>Archivo → Compartir → "Cualquier persona con el enlace" → Lector</p>`;
     statusBadge.textContent = 'Error';
     statusBadge.style.color = '#f87171';
   }
