@@ -570,10 +570,13 @@ function renderAnnual(data) {
 }
 
 // 03 Health
-function renderHealth() {
-  // Last 8 Saturdays where ANY merkaz reported (active dates of the tnu'a)
-  const allDates = [...new Set(allData.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
-  const last8dates = allDates.slice(-8);
+function renderHealth(filteredData) {
+  // Merkazim that appear in the filtered period (respects year filter)
+  const activeMInPeriod = new Set(filteredData.filter(r => r.cantidad > 0).map(r => r.merkaz));
+
+  // Last 8 Saturdays in the filtered period where ANY merkaz reported
+  const datesInPeriod = [...new Set(filteredData.filter(r => r.cantidad > 0).map(r => r.dateObj.toISOString().slice(0,10)))].sort();
+  const last8dates = datesInPeriod.slice(-8);
 
   // Build lookup: merkaz → date → quantity
   const byMDate = {};
@@ -590,7 +593,7 @@ function renderHealth() {
   });
 
   const health = {};
-  merkazList.filter(m => activeM.has(m)).forEach(m => {
+  merkazList.filter(m => activeM.has(m) && activeMInPeriod.has(m)).forEach(m => {
     const vals = last8dates.map(d => byMDate[m]?.[d] ?? 0); // 0 if didn't report
     const avg8 = Math.round(vals.reduce((s,v)=>s+v,0) / 8);
     const showed = vals.filter(v => v > 0).length; // how many of 8 they attended
@@ -708,7 +711,7 @@ function render() {
   renderKPIs(data);
   renderMonthly(data);
   renderAnnual(data);
-  renderHealth();
+  renderHealth(data);
   renderLines(data);
   renderSeasonal();
   renderTable();
