@@ -333,10 +333,23 @@ window.onload = () => {
     callback: async (r) => {
       if (r.error) { showError('Error de autenticación: ' + r.error); return; }
       accessToken = r.access_token;
+      const expiry = Date.now() + (r.expires_in - 60) * 1000;
+      localStorage.setItem('gtoken', accessToken);
+      localStorage.setItem('gtoken_exp', expiry);
       document.getElementById('btn-logout').style.display = 'block';
       await loadData();
     }
   });
+
+  // Try to reuse saved token
+  const saved = localStorage.getItem('gtoken');
+  const exp   = parseInt(localStorage.getItem('gtoken_exp') || '0');
+  if (saved && Date.now() < exp) {
+    accessToken = saved;
+    document.getElementById('btn-logout').style.display = 'block';
+    loadData();
+  }
+
   document.getElementById('btn-google-login').onclick = () => tokenClient.requestAccessToken();
   document.getElementById('btn-logout').onclick = logout;
   document.querySelectorAll('.cat-tab').forEach(btn => {
@@ -353,6 +366,7 @@ window.onload = () => {
 function logout() {
   google.accounts.oauth2.revoke(accessToken, () => {});
   accessToken = null; allData = []; destroyAll();
+  localStorage.removeItem('gtoken'); localStorage.removeItem('gtoken_exp');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('btn-logout').style.display = 'none';
