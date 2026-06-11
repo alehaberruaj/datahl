@@ -479,21 +479,21 @@ function colorFor(m) { return COLORS[merkazList.indexOf(m) % COLORS.length]; }
 function renderKPIs(data) {
   const nz = data.filter(r => r.cantidad > 0);
   const total = nz.reduce((s,r) => s+r.cantidad, 0);
-  const dates = new Set(nz.map(r => r.dateObj.toISOString().slice(0,10)));
-  const avg = dates.size ? Math.round(total / dates.size) : 0;
-  const max = nz.length ? Math.max(...nz.map(r => r.cantidad)) : 0;
-  const maxR = nz.find(r => r.cantidad === max);
   const byDate = {}; nz.forEach(r => { const k=r.dateObj.toISOString().slice(0,10); byDate[k]=(byDate[k]||0)+r.cantidad; });
   const sortedDates = Object.keys(byDate).sort();
+  const avg = sortedDates.length ? Math.round(total / sortedDates.length) : 0;
+  const maxDate = sortedDates.reduce((a,b) => byDate[a]>=byDate[b]?a:b, sortedDates[0]);
+  const max = maxDate ? byDate[maxDate] : 0;
+  const maxLabel = maxDate ? maxDate.split('-').reverse().join('/') : '';
   const lastN = sortedDates.slice(-4), prevN = sortedDates.slice(-8,-4);
   const sumL = lastN.reduce((s,d)=>s+(byDate[d]||0),0);
   const sumP = prevN.reduce((s,d)=>s+(byDate[d]||0),0);
   const delta = sumP>0 ? Math.round((sumL-sumP)/sumP*100) : 0;
 
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">${dates.size} peulot con asistencia</div></div>
-    <div class="kpi"><div class="kpi-label">Promedio por sábado</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 semanas atrás</div></div>
-    <div class="kpi"><div class="kpi-label">Máximo puntual</div><div class="kpi-value">${max}</div><div class="kpi-sub">${maxR?maxR.merkaz+' · '+maxR.fecha:''}</div></div>
+    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">${sortedDates.length} sábados con asistencia</div></div>
+    <div class="kpi"><div class="kpi-label">Promedio por sábado</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 sábados atrás</div></div>
+    <div class="kpi"><div class="kpi-label">Mejor sábado</div><div class="kpi-value">${max.toLocaleString('es')}</div><div class="kpi-sub">Total del ${maxLabel}</div></div>
     <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">${[...new Set(Object.values(merkCategories).filter((_,i)=>activeM.has(merkazList[i])))]}</div></div>
   `;
 }
