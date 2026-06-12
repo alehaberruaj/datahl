@@ -624,7 +624,7 @@ function renderHealth(filteredData) {
   const list = document.getElementById('health-list');
   list.innerHTML = '';
   ms.forEach(m => {
-    const {avg8,histMax,pct} = health[m];
+    const {avg8, histMax, pct, showed} = health[m];
     const cls = pct>=65?'green':pct>=40?'yellow':'red';
     const col = pct>=65?'#10b981':pct>=40?'#f59e0b':'#ef4444';
     list.innerHTML += `<div class="health-item">
