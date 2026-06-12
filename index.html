@@ -11,105 +11,116 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0a0e1a; --surface: #111827; --surface2: #1e2a3a;
-      --border: #1e3a5f; --text: #e2e8f0; --muted: #64748b;
-      --accent: #3b82f6; --green: #10b981; --yellow: #f59e0b; --red: #ef4444;
+      --bg:#0a0e1a; --surface:#111827; --surface2:#1e2a3a;
+      --border:#1e3a5f; --text:#e2e8f0; --muted:#64748b;
+      --accent:#3b82f6; --green:#10b981; --yellow:#f59e0b; --red:#ef4444;
     }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-    /* Header */
-    header { background: linear-gradient(135deg,#0f1f3d,#0a0e1a); border-bottom:1px solid var(--border); padding:1.25rem 2rem; display:flex; align-items:center; gap:1rem; }
+    header { background:linear-gradient(135deg,#0f1f3d,#0a0e1a); border-bottom:1px solid var(--border); padding:1.25rem 2rem; display:flex; align-items:center; gap:1rem; }
     .logo { font-size:1.4rem; font-weight:800; color:#f1f5f9; letter-spacing:-0.03em; }
     .logo span { color:var(--accent); }
-    header p { font-size:0.8rem; color:var(--muted); margin-top:0.15rem; }
-    .header-right { margin-left:auto; display:flex; align-items:center; gap:0.75rem; }
-    .chip { font-size:0.7rem; padding:0.25rem 0.65rem; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+    header p { font-size:0.8rem; color:var(--muted); margin-top:.15rem; }
+    .hdr-r { margin-left:auto; display:flex; align-items:center; gap:.75rem; }
+    .chip { font-size:.7rem; padding:.25rem .65rem; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
     .chip.live { border-color:var(--green); color:#34d399; background:#10b98111; }
-    #btn-logout { font-size:0.75rem; padding:0.3rem 0.8rem; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:none; transition:all .15s; }
+    #btn-logout { font-size:.75rem; padding:.3rem .8rem; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:none; transition:all .15s; }
     #btn-logout:hover { border-color:var(--red); color:#f87171; }
 
     /* Login */
     #login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; gap:1.5rem; text-align:center; padding:2rem; }
     .login-card { background:var(--surface); border:1px solid var(--border); border-radius:1.25rem; padding:2.5rem 3rem; max-width:400px; width:100%; }
-    .login-card h2 { font-size:1.3rem; margin-bottom:0.5rem; }
-    .login-card p { color:var(--muted); font-size:0.875rem; line-height:1.6; margin-bottom:1.5rem; }
-    #btn-google-login { width:100%; background:white; color:#1f2937; border:none; padding:0.75rem 1.5rem; border-radius:0.6rem; font-size:0.95rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.75rem; transition:box-shadow .15s; }
-    #btn-google-login:hover { box-shadow:0 0 0 3px #3b82f644; }
+    .login-card h2 { font-size:1.3rem; margin-bottom:.5rem; }
+    .login-card p { color:var(--muted); font-size:.875rem; line-height:1.6; margin-bottom:1.5rem; }
+    #btn-glogin { width:100%; background:white; color:#1f2937; border:none; padding:.75rem 1.5rem; border-radius:.6rem; font-size:.95rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.75rem; transition:box-shadow .15s; }
+    #btn-glogin:hover { box-shadow:0 0 0 3px #3b82f644; }
 
-    /* Loading */
     #loading { display:none; align-items:center; justify-content:center; min-height:60vh; flex-direction:column; gap:1rem; color:var(--muted); }
     .spinner { width:2rem; height:2rem; border:3px solid var(--surface2); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    .error-box { color:#f87171; text-align:center; padding:2rem; font-size:0.9rem; line-height:1.7; max-width:480px; }
+    .error-box { color:#f87171; text-align:center; padding:2rem; font-size:.9rem; line-height:1.7; max-width:480px; }
 
     #app { display:none; }
 
-    /* Filter bar */
-    .filterbar { background:var(--surface); border-bottom:1px solid var(--border); padding:0.75rem 2rem; display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center; }
-    .filterbar label { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-    select { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:0.35rem 0.65rem; border-radius:0.4rem; font-size:0.8rem; cursor:pointer; }
+    /* Filterbar */
+    .filterbar { background:var(--surface); border-bottom:1px solid var(--border); padding:.75rem 2rem; display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; }
+    .filterbar label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    select { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.35rem .65rem; border-radius:.4rem; font-size:.8rem; cursor:pointer; }
     select:focus { outline:none; border-color:var(--accent); }
     .sep { width:1px; height:1.5rem; background:var(--border); }
-    .pill-bar { display:flex; flex-wrap:wrap; gap:0.3rem; }
-    .mpill { padding:0.18rem 0.55rem; border-radius:999px; font-size:0.68rem; border:1px solid; cursor:pointer; transition:opacity .15s; user-select:none; }
-    .mpill.off { opacity:0.2; }
-    .btn { padding:0.35rem 0.85rem; border-radius:0.4rem; font-size:0.8rem; cursor:pointer; border:1px solid; font-weight:600; transition:all .15s; }
+    .pill-bar { display:flex; flex-wrap:wrap; gap:.3rem; }
+    .mpill { padding:.18rem .55rem; border-radius:999px; font-size:.68rem; border:1px solid; cursor:pointer; transition:opacity .15s; user-select:none; }
+    .mpill.off { opacity:.2; }
+    .btn { padding:.35rem .85rem; border-radius:.4rem; font-size:.8rem; cursor:pointer; border:1px solid; font-weight:600; transition:all .15s; }
     .btn-primary { background:var(--accent); border-color:#2563eb; color:white; }
     .btn-primary:hover { background:#2563eb; }
     .btn-ghost { background:transparent; border-color:var(--border); color:var(--muted); font-weight:400; }
     .btn-ghost:hover { background:var(--surface2); }
-
-    /* Category tabs */
-    .cat-tabs { display:flex; gap:0.4rem; }
-    .cat-tab { padding:0.25rem 0.7rem; border-radius:999px; font-size:0.72rem; border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all .15s; background:transparent; }
+    .cat-tabs { display:flex; gap:.4rem; }
+    .cat-tab { padding:.25rem .7rem; border-radius:999px; font-size:.72rem; border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all .15s; background:transparent; }
     .cat-tab.active { background:var(--accent); border-color:var(--accent); color:white; font-weight:600; }
 
     /* KPIs */
-    .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.75rem; padding:1.25rem 2rem; }
-    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:0.75rem; padding:1rem 1.25rem; }
-    .kpi-label { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-    .kpi-value { font-size:1.75rem; font-weight:800; color:#f1f5f9; margin-top:0.15rem; line-height:1; }
-    .kpi-sub { font-size:0.72rem; color:var(--muted); margin-top:0.3rem; }
-    .kpi-delta { font-size:0.72rem; margin-top:0.3rem; font-weight:600; }
+    .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.75rem; padding:1.25rem 2rem; }
+    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:.75rem; padding:1rem 1.25rem; }
+    .kpi-label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    .kpi-value { font-size:1.75rem; font-weight:800; color:#f1f5f9; margin-top:.15rem; line-height:1; }
+    .kpi-sub { font-size:.72rem; color:var(--muted); margin-top:.3rem; }
+    .kpi-delta { font-size:.72rem; margin-top:.3rem; font-weight:600; }
     .kpi-delta.up { color:var(--green); } .kpi-delta.down { color:var(--red); }
 
     /* Sections */
     .sections { padding:0 2rem 3rem; display:flex; flex-direction:column; gap:2rem; }
-    .section-title { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:0.75rem; }
+    .sec-title { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:.75rem; }
     .chart-row { display:grid; grid-template-columns:1fr; gap:1rem; }
     @media(min-width:960px) { .chart-row { grid-template-columns:2fr 1fr; } }
-    .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:0.875rem; padding:1.25rem; }
-    .chart-card h2 { font-size:0.95rem; font-weight:700; color:#f1f5f9; margin-bottom:0.2rem; }
-    .chart-card .subtitle { font-size:0.75rem; color:var(--muted); margin-bottom:1rem; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:.875rem; padding:1.25rem; }
+    .card h2 { font-size:.95rem; font-weight:700; color:#f1f5f9; margin-bottom:.2rem; }
+    .card .sub { font-size:.75rem; color:var(--muted); margin-bottom:1rem; }
     canvas { max-height:320px; }
 
-    /* Insight panel */
-    .insight { background:var(--surface2); border:1px solid var(--border); border-radius:0.875rem; padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem; }
-    .insight h3 { font-size:0.72rem; font-weight:700; color:#93c5fd; text-transform:uppercase; letter-spacing:.05em; }
-    .insight p { font-size:0.8rem; color:#94a3b8; line-height:1.65; }
+    /* Insight */
+    .insight { background:var(--surface2); border:1px solid var(--border); border-radius:.875rem; padding:1.25rem; display:flex; flex-direction:column; gap:.75rem; }
+    .insight h3 { font-size:.72rem; font-weight:700; color:#93c5fd; text-transform:uppercase; letter-spacing:.05em; }
+    .insight p { font-size:.8rem; color:#94a3b8; line-height:1.65; }
 
-    /* Health bars */
-    .health-list { display:flex; flex-direction:column; gap:0.55rem; margin-top:0.25rem; }
-    .health-item { display:flex; flex-direction:column; gap:0.2rem; }
-    .health-header { display:flex; justify-content:space-between; font-size:0.76rem; }
-    .health-name { color:var(--text); font-weight:600; }
-    .health-pct { font-weight:700; }
-    .health-pct.green { color:var(--green); } .health-pct.yellow { color:var(--yellow); } .health-pct.red { color:var(--red); }
-    .health-bar-bg { height:5px; background:var(--surface); border-radius:999px; overflow:hidden; }
-    .health-bar-fill { height:100%; border-radius:999px; }
-    .health-detail { font-size:0.66rem; color:var(--muted); }
+    /* Health */
+    .health-list { display:flex; flex-direction:column; gap:.55rem; margin-top:.25rem; }
+    .health-item { display:flex; flex-direction:column; gap:.2rem; }
+    .h-hdr { display:flex; justify-content:space-between; font-size:.76rem; }
+    .h-name { color:var(--text); font-weight:600; }
+    .h-pct { font-weight:700; }
+    .h-pct.green{color:var(--green);} .h-pct.yellow{color:var(--yellow);} .h-pct.red{color:var(--red);}
+    .h-bar-bg { height:5px; background:var(--surface); border-radius:999px; overflow:hidden; }
+    .h-bar-fill { height:100%; border-radius:999px; }
+    .h-detail { font-size:.66rem; color:var(--muted); }
 
-    /* Summary table */
+    /* Heatmap */
+    .heatmap-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .heatmap { border-collapse:collapse; font-size:.68rem; white-space:nowrap; }
+    .heatmap th.row-label { text-align:right; padding:.25rem .6rem .25rem 0; color:var(--text); font-weight:600; min-width:90px; position:sticky; left:0; background:var(--surface); z-index:1; }
+    .heatmap th.col-label { text-align:center; padding:.25rem .3rem; color:var(--muted); font-weight:400; min-width:36px; }
+    .heatmap td { width:34px; height:22px; text-align:center; border-radius:3px; cursor:default; position:relative; transition:opacity .1s; }
+    .heatmap td:hover { opacity:.8; outline:1px solid #ffffff44; }
+    .heatmap .row-cat { font-size:.58rem; padding:.1rem .35rem; border-radius:999px; margin-left:.3rem; vertical-align:middle; }
+    .heatmap .row-cat.grande  { background:#8b5cf622; color:#a78bfa; border:1px solid #8b5cf644; }
+    .heatmap .row-cat.mediano { background:#3b82f622; color:#60a5fa; border:1px solid #3b82f644; }
+    .heatmap .row-cat.chico   { background:#33415522; color:#94a3b8; border:1px solid #47556944; }
+    .hm-legend { display:flex; align-items:center; gap:.5rem; margin-top:.75rem; font-size:.7rem; color:var(--muted); }
+    .hm-gradient { width:120px; height:10px; border-radius:3px; background:linear-gradient(to right, #1e2a3a, #1d4ed8, #3b82f6, #93c5fd); }
+
+    /* Table */
     .table-wrap { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; font-size:0.78rem; }
-    th { background:var(--surface2); color:var(--muted); font-size:0.65rem; text-transform:uppercase; letter-spacing:.05em; padding:0.5rem 0.75rem; text-align:left; border-bottom:1px solid var(--border); position:sticky; top:0; }
-    td { padding:0.45rem 0.75rem; border-bottom:1px solid #1e2a3a22; color:var(--text); }
+    table { width:100%; border-collapse:collapse; font-size:.78rem; }
+    th { background:var(--surface2); color:var(--muted); font-size:.65rem; text-transform:uppercase; letter-spacing:.05em; padding:.5rem .75rem; text-align:left; border-bottom:1px solid var(--border); }
+    td { padding:.45rem .75rem; border-bottom:1px solid #1e2a3a33; }
     tr:hover td { background:#1e2a3a55; }
-    .td-num { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
-    .td-cat { font-size:0.65rem; padding:0.1rem 0.5rem; border-radius:999px; border:1px solid; }
-    .td-cat.grande  { border-color:#8b5cf6; color:#a78bfa; }
-    .td-cat.mediano { border-color:#3b82f6; color:#60a5fa; }
-    .td-cat.chico   { border-color:#64748b; color:#94a3b8; }
+    .tn { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+    .tc { font-size:.65rem; padding:.1rem .5rem; border-radius:999px; border:1px solid; }
+    .tc.grande  { border-color:#8b5cf6; color:#a78bfa; }
+    .tc.mediano { border-color:#3b82f6; color:#60a5fa; }
+    .tc.chico   { border-color:#64748b; color:#94a3b8; }
+    .status-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:.4rem; }
   </style>
 </head>
 <body>
@@ -119,7 +130,7 @@
     <div class="logo">Dash<span>Tnu'a</span></div>
     <p>Análisis de asistencia · Merkazim</p>
   </div>
-  <div class="header-right">
+  <div class="hdr-r">
     <span class="chip live" id="live-chip" style="display:none">● Live</span>
     <span class="chip" id="status-chip">—</span>
     <button id="btn-logout">Cerrar sesión</button>
@@ -129,19 +140,17 @@
 <div id="login-screen">
   <div class="login-card">
     <h2>Dashboard de Asistencia</h2>
-    <p>Iniciá sesión con la cuenta de Google que tiene acceso al spreadsheet para ver los datos.</p>
-    <button id="btn-google-login">
+    <p>Iniciá sesión con tu cuenta de Google para acceder al dashboard.</p>
+    <button id="btn-glogin">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Iniciar sesión con Google
     </button>
   </div>
 </div>
 
-<div id="loading"><div class="spinner"></div><p id="loading-msg">Cargando datos…</p></div>
+<div id="loading"><div class="spinner"></div><p>Cargando datos…</p></div>
 
 <div id="app">
-
-  <!-- Filter bar -->
   <div class="filterbar">
     <label>Año</label>
     <select id="sel-year"><option value="all">Todos</option></select>
@@ -154,14 +163,8 @@
       <button class="cat-tab" data-cat="chico">Chicos</button>
     </div>
     <div class="sep"></div>
-    <label>Excluir ceros</label>
-    <select id="sel-zeros">
-      <option value="no">Sí (feriados/vacaciones)</option>
-      <option value="yes">No</option>
-    </select>
-    <div class="sep"></div>
     <div class="pill-bar" id="pills"></div>
-    <div style="margin-left:auto;display:flex;gap:0.5rem">
+    <div style="margin-left:auto;display:flex;gap:.5rem">
       <button class="btn btn-ghost" id="btn-reset-zoom">↺ Zoom</button>
       <button class="btn btn-primary" id="btn-refresh">↺ Actualizar</button>
     </div>
@@ -171,138 +174,129 @@
 
   <div class="sections">
 
-    <!-- 01 Tendencia mensual -->
+    <!-- 01 Tendencia general -->
     <div>
-      <div class="section-title">01 · Tendencia general de la tnu'a</div>
+      <div class="sec-title">01 · Tendencia general de la tnu'a</div>
       <div class="chart-row">
-        <div class="chart-card">
-          <h2>Asistencia total mensual</h2>
-          <div class="subtitle">Suma de todos los merkazim activos, agrupada por mes. Pasá el cursor sobre el gráfico para ver el valor exacto.</div>
+        <div class="card">
+          <h2>Asistencia mensual total + media móvil 3 meses</h2>
+          <div class="sub">Barras = total del mes · Línea = tendencia suavizada (promedio de 3 meses). Zoom con rueda del mouse.</div>
           <canvas id="chart-monthly"></canvas>
         </div>
         <div class="insight">
           <h3>¿Qué muestra?</h3>
-          <p>La evolución global del movimiento mes a mes. Es el indicador más directo de salud general: si la línea sube, la tnu'a está creciendo; si baja, hay que investigar qué está pasando.</p>
+          <p>La salud global del movimiento. Las barras muestran el volumen real de cada mes; la línea suaviza los picos puntuales (feriados, eventos) para revelar la tendencia real.</p>
           <h3>Cómo leerlo</h3>
-          <p>Los valles en julio y enero son normales (vacaciones). Lo que importa es comparar el mismo mes entre distintos años, no el mes siguiente.</p>
-          <h3>Acción sugerida</h3>
-          <p>Si ves dos o tres meses consecutivos por debajo del promedio histórico, es señal de alerta que merece una reunión de seguimiento.</p>
+          <p>Si la línea de tendencia sube sostenidamente → el movimiento crece. Si oscila sin dirección clara → hay estancamiento. Si baja varios meses seguidos → hay que actuar.</p>
+          <h3>Ojo con</h3>
+          <p>Julio y diciembre siempre van a ser bajos por vacaciones. Lo relevante es comparar los mismos meses entre años.</p>
         </div>
       </div>
     </div>
 
-    <!-- 02 Comparación anual -->
+    <!-- 02 Mapa de actividad -->
     <div>
-      <div class="section-title">02 · ¿Estamos mejor que el año pasado?</div>
+      <div class="sec-title">02 · Mapa de actividad — quién estuvo, cuándo y cuánto</div>
+      <div class="card" style="overflow:hidden">
+        <h2>Mapa de asistencia por merkaz y mes</h2>
+        <div class="sub">Cada celda = promedio de asistencia de ese merkaz en ese mes. Color relativo al máximo histórico de cada merkaz. Pasá el cursor para ver el valor exacto.</div>
+        <div class="heatmap-wrap" id="heatmap-wrap"></div>
+        <div class="hm-legend">
+          <span>Sin datos</span>
+          <div style="width:24px;height:10px;border-radius:3px;background:#1e2a3a;border:1px solid #334155"></div>
+          <div class="hm-gradient"></div>
+          <span>Máximo</span>
+          <span style="margin-left:1rem;color:var(--muted)">Colores relativos al propio máximo de cada merkaz</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 Comparación anual -->
+    <div>
+      <div class="sec-title">03 · ¿Estamos mejor que el año pasado?</div>
       <div class="chart-row">
-        <div class="chart-card">
-          <h2>Asistencia por semana del año — comparación entre años</h2>
-          <div class="subtitle">Cada línea es un año. El eje horizontal es la semana del año (1–52), lo que permite comparar la misma época.</div>
+        <div class="card">
+          <h2>Asistencia total por semana del año — comparación entre años</h2>
+          <div class="sub">Cada línea es un año en el mismo eje. El año más reciente aparece más grueso y brillante.</div>
           <canvas id="chart-annual"></canvas>
         </div>
         <div class="insight">
           <h3>¿Qué muestra?</h3>
-          <p>Si la línea de este año está <strong style="color:#10b981">por encima</strong> de años anteriores en las mismas semanas, estamos creciendo. Si está <strong style="color:#ef4444">por debajo</strong>, hay una caída real más allá de la estacionalidad.</p>
-          <h3>Importante</h3>
-          <p>Usá el filtro de categoría para comparar solo merkazim grandes, solo chicos, etc. Mezclarlos distorsiona la tendencia.</p>
+          <p>Si este año está rindiendo más o menos que el mismo período del año anterior, eliminando el efecto estacional.</p>
           <h3>Cómo leerlo</h3>
-          <p>Las semanas con muchos merkazim informando son las más confiables. Semanas con pocos datos pueden fluctuar más.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 03 Estado por merkaz -->
-    <div>
-      <div class="section-title">03 · Estado actual de cada merkaz</div>
-      <div class="chart-row">
-        <div class="chart-card">
-          <h2>% del máximo histórico alcanzado en las últimas 8 peulot</h2>
-          <div class="subtitle">Compara el promedio reciente de cada merkaz contra su propio récord histórico — siempre con datos de todos los años.</div>
-          <canvas id="chart-health"></canvas>
-        </div>
-        <div class="insight">
-          <h3>¿Qué muestra?</h3>
-          <p>Cuánto del potencial real de cada merkaz se está aprovechando hoy. Un merkaz chico con 80% es mejor noticia que un grande con 30%.</p>
-          <h3>Semáforo</h3>
-          <p>
-            <strong style="color:#10b981">Verde &gt;65%</strong> — cerca de su mejor momento<br>
-            <strong style="color:#f59e0b">Amarillo 40–65%</strong> — hay margen de mejora<br>
-            <strong style="color:#ef4444">Rojo &lt;40%</strong> — muy por debajo de su capacidad
-          </p>
-          <div class="health-list" id="health-list"></div>
+          <p>Si la línea de este año está <strong style="color:#10b981">por encima</strong> de las anteriores → crecimiento real. Si está <strong style="color:#ef4444">por debajo</strong> → caída real, no solo estacionalidad.</p>
+          <h3>Truco</h3>
+          <p>Filtrá por categoría (Grandes / Medianos / Chicos) para ver si el crecimiento o caída es homogéneo o afecta a un solo segmento.</p>
         </div>
       </div>
     </div>
 
     <!-- 04 Evolución individual -->
     <div>
-      <div class="section-title">04 · Evolución individual por merkaz</div>
+      <div class="sec-title">04 · Evolución individual con tendencia suavizada</div>
       <div class="chart-row">
-        <div class="chart-card">
-          <h2>Trayectoria de asistencia por merkaz</h2>
-          <div class="subtitle">Hacé clic en un merkaz arriba para verlo solo. Zoom con la rueda del mouse.</div>
+        <div class="card">
+          <h2>Trayectoria por merkaz — datos reales + media móvil 4 semanas</h2>
+          <div class="sub">Puntos finos = datos reales · Línea gruesa = tendencia suavizada. Clic en un merkaz (arriba) para ver solo ese.</div>
           <canvas id="chart-lines"></canvas>
         </div>
         <div class="insight">
           <h3>¿Qué muestra?</h3>
-          <p>La historia completa de cada merkaz. Permite identificar si un merkaz creció de forma sostenida, tuvo un pico puntual, o viene en caída.</p>
-          <h3>Tips de uso</h3>
+          <p>La historia real de cada merkaz. Los datos crudos muestran picos y valles puntuales; la media móvil revela si la tendencia de fondo es ascendente, descendente o estable.</p>
+          <h3>Tips</h3>
           <p>
-            • Seleccioná un solo merkaz para ver su curva con claridad.<br>
-            • Usá el filtro por categoría (Grandes / Medianos / Chicos) para comparar merkazim de tamaño similar.<br>
-            • Un pico aislado puede ser un evento especial, no una tendencia real.
+            • Un pico aislado puede ser un evento especial, no una tendencia real — mirá la línea suavizada.<br>
+            • Filtrá por categoría para comparar merkazim del mismo tamaño.<br>
+            • Usá zoom para ver un período específico en detalle.
           </p>
-          <h3>Ojo con</h3>
-          <p>Comparar Etgar (150+ javerim) con Jidush (7 javerim) en el mismo gráfico no tiene sentido estadístico. Filtrá por categoría.</p>
+          <h3>Señales de alerta</h3>
+          <p>Si la media móvil de un merkaz lleva 3+ meses bajando sin rebote → ese merkaz necesita atención.</p>
         </div>
       </div>
     </div>
 
-    <!-- 05 Estacionalidad -->
+    <!-- 05 Estado actual -->
     <div>
-      <div class="section-title">05 · ¿Qué meses son históricamente más fuertes?</div>
+      <div class="sec-title">05 · Estado actual de cada merkaz</div>
       <div class="chart-row">
-        <div class="chart-card">
-          <h2>Promedio histórico de asistencia por mes del año</h2>
-          <div class="subtitle">Promedio de todos los años disponibles, por mes calendario. Útil para planificar.</div>
-          <canvas id="chart-seasonal"></canvas>
+        <div class="card">
+          <h2>% del máximo histórico en los últimos 8 sábados activos de la tnu'a</h2>
+          <div class="sub">Solo muestra merkazim con datos en el período seleccionado. Merkazim inactivos no aparecen.</div>
+          <canvas id="chart-health"></canvas>
         </div>
         <div class="insight">
           <h3>¿Qué muestra?</h3>
-          <p>Los meses que estructuralmente concentran más asistencia, independientemente del año. Es el patrón estacional del movimiento.</p>
-          <h3>Para qué sirve</h3>
+          <p>Cuánto del potencial real de cada merkaz se está aprovechando hoy, comparado con su propio máximo histórico. Es una medida de rendimiento relativo, no absoluto.</p>
+          <h3>Semáforo</h3>
           <p>
-            • Planificar actividades grandes en meses de alta asistencia.<br>
-            • Lanzar iniciativas de refuerzo en meses históricamente bajos.<br>
-            • Fijar expectativas realistas por época del año.
+            <strong style="color:#10b981">Verde &gt;65%</strong> → cerca de su mejor momento<br>
+            <strong style="color:#f59e0b">Amarillo 40–65%</strong> → hay margen<br>
+            <strong style="color:#ef4444">Rojo &lt;40%</strong> → muy por debajo de su capacidad
           </p>
-          <h3>Nota</h3>
-          <p>Julio y diciembre suelen ser bajos por vacaciones. Eso no es problema — es el patrón esperado.</p>
+          <h3>Importante</h3>
+          <p>Un merkaz chico con 80% es mejor noticia que uno grande con 30%. Este gráfico compara cada uno contra sí mismo.</p>
+          <div class="health-list" id="health-list"></div>
         </div>
       </div>
     </div>
 
-    <!-- 06 Tabla resumen -->
+    <!-- 06 Tabla -->
     <div>
-      <div class="section-title">06 · Tabla resumen por merkaz</div>
-      <div class="chart-card">
-        <h2>Últimas peulot y estadísticas por merkaz</h2>
-        <div class="subtitle">Valores exactos de asistencia. Ordenado por última fecha registrada.</div>
+      <div class="sec-title">06 · Tabla resumen con estado de actividad</div>
+      <div class="card">
+        <h2>Estadísticas por merkaz</h2>
+        <div class="sub">Ordenado por última fecha reportada. El punto de color indica si el merkaz está activo (verde), en pausa (amarillo) o inactivo (rojo).</div>
         <div class="table-wrap" style="margin-top:1rem">
-          <table id="summary-table">
+          <table>
             <thead>
               <tr>
-                <th>Merkaz</th>
-                <th>Categoría</th>
-                <th>Última peulá</th>
-                <th class="td-num">Últ. asistencia</th>
-                <th class="td-num">Prom. últ. 8</th>
-                <th class="td-num">Prom. histórico</th>
-                <th class="td-num">Máx. histórico</th>
-                <th class="td-num">Total peulot</th>
+                <th>Merkaz</th><th>Cat.</th><th>Estado</th>
+                <th>Última peulá</th><th class="tn">Últ. asist.</th>
+                <th class="tn">Prom. últ. 8 sáb.</th><th class="tn">Prom. hist.</th>
+                <th class="tn">Máx. hist.</th><th class="tn">Peulot total</th>
               </tr>
             </thead>
-            <tbody id="summary-body"></tbody>
+            <tbody id="tbl-body"></tbody>
           </table>
         </div>
       </div>
@@ -317,12 +311,12 @@ const SHEET_ID   = '1Vd1YCyll1M7M_r6mv8XHhVHiMDZuNk0lr2wR03elJp4';
 const SHEET_NAME = 'Tabla larga';
 const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const ALIASES    = { 'Beit Israel': 'Metzadá' };
-const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#e11d48','#0ea5e9','#22c55e','#eab308','#6366f1'];
+const MONTHS     = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const COLORS     = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#e11d48','#0ea5e9','#22c55e','#eab308','#6366f1'];
 
 let tokenClient, accessToken = null;
 let allData = [], merkazList = [], activeM = new Set();
-let merkCategories = {}; // merkaz → 'grande'|'mediano'|'chico'
+let merkCat = {};
 let activeCat = 'all';
 let charts = {};
 
@@ -333,15 +327,14 @@ window.onload = () => {
     callback: async (r) => {
       if (r.error) { showError('Error de autenticación: ' + r.error); return; }
       accessToken = r.access_token;
-      const expiry = Date.now() + (r.expires_in - 60) * 1000;
+      const exp = Date.now() + (r.expires_in - 60) * 1000;
       localStorage.setItem('gtoken', accessToken);
-      localStorage.setItem('gtoken_exp', expiry);
+      localStorage.setItem('gtoken_exp', exp);
       document.getElementById('btn-logout').style.display = 'block';
       await loadData();
     }
   });
 
-  // Try to reuse saved token
   const saved = localStorage.getItem('gtoken');
   const exp   = parseInt(localStorage.getItem('gtoken_exp') || '0');
   if (saved && Date.now() < exp) {
@@ -350,16 +343,13 @@ window.onload = () => {
     loadData();
   }
 
-  document.getElementById('btn-google-login').onclick = () => tokenClient.requestAccessToken();
+  document.getElementById('btn-glogin').onclick = () => tokenClient.requestAccessToken();
   document.getElementById('btn-logout').onclick = logout;
-  document.querySelectorAll('.cat-tab').forEach(btn => {
-    btn.onclick = () => {
-      activeCat = btn.dataset.cat;
-      document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b === btn));
-      // apply category filter to activeM
-      activeM = new Set(merkazList.filter(m => activeCat === 'all' || merkCategories[m] === activeCat));
-      buildPills(); render();
-    };
+  document.querySelectorAll('.cat-tab').forEach(btn => btn.onclick = () => {
+    activeCat = btn.dataset.cat;
+    document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b === btn));
+    activeM = new Set(merkazList.filter(m => activeCat === 'all' || merkCat[m] === activeCat));
+    buildPills(); render();
   });
 };
 
@@ -376,17 +366,17 @@ function logout() {
 
 // ── Fetch ─────────────────────────────────────────────────────
 async function loadData() {
-  showLoading('Cargando datos desde Google Sheets…');
+  showLoading('Cargando datos…');
   try {
     const range = encodeURIComponent(`${SHEET_NAME}!A:G`);
     const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
-    if (res.status === 401) { showError('Sesión expirada. Cerrá sesión y volvé a entrar.'); return; }
-    if (!res.ok) { showError(`Error al leer el sheet: HTTP ${res.status}`); return; }
+    if (res.status === 401) { showError('Sesión expirada — cerrá sesión y volvé a entrar.'); return; }
+    if (!res.ok) { showError(`Error HTTP ${res.status}`); return; }
     const json = await res.json();
     allData = parseValues(json.values || []);
-    if (!allData.length) { showError('No se encontraron datos en la pestaña "Tabla larga".'); return; }
+    if (!allData.length) { showError('No se encontraron datos en "Tabla larga".'); return; }
     computeCategories();
     initApp();
   } catch (e) { showError('Error de red: ' + e.message); }
@@ -402,32 +392,28 @@ function parseValues(rows) {
   for (let i = hi + 1; i < rows.length; i++) {
     const [fecha, merkaz, cantStr, anioStr, mesStr, semanaStr] = rows[i];
     if (!fecha || !merkaz) continue;
-    const merkazNorm = ALIASES[String(merkaz).trim()] ?? String(merkaz).trim();
+    const merkazN = ALIASES[String(merkaz).trim()] ?? String(merkaz).trim();
     const cant = parseFloat(String(cantStr||'0').replace(',','.')) || 0;
     const parts = String(fecha).split('/');
     if (parts.length !== 3) continue;
     const [d, m, y] = parts;
     const dateObj = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
     if (isNaN(dateObj)) continue;
-    const anio = parseInt(anioStr) || dateObj.getFullYear();
-    const mes  = parseInt(mesStr)  || (dateObj.getMonth() + 1);
+    const anio   = parseInt(anioStr)   || dateObj.getFullYear();
+    const mes    = parseInt(mesStr)    || (dateObj.getMonth() + 1);
     const semana = parseInt(semanaStr) || 0;
-    data.push({ fecha: String(fecha).trim(), dateObj, merkaz: merkazNorm, cantidad: cant, anio, mes, semana });
+    data.push({ fecha: String(fecha).trim(), dateObj, merkaz: merkazN, cantidad: cant, anio, mes, semana });
   }
   return data;
 }
 
-// ── Categories: computed from all-time average ────────────────
 function computeCategories() {
   const byM = {};
-  allData.filter(r => r.cantidad > 0).forEach(r => {
-    if (!byM[r.merkaz]) byM[r.merkaz] = [];
-    byM[r.merkaz].push(r.cantidad);
-  });
-  merkCategories = {};
+  allData.filter(r => r.cantidad > 0).forEach(r => { if (!byM[r.merkaz]) byM[r.merkaz] = []; byM[r.merkaz].push(r.cantidad); });
+  merkCat = {};
   Object.entries(byM).forEach(([m, vals]) => {
     const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
-    merkCategories[m] = avg >= 70 ? 'grande' : avg >= 20 ? 'mediano' : 'chico';
+    merkCat[m] = avg >= 70 ? 'grande' : avg >= 20 ? 'mediano' : 'chico';
   });
 }
 
@@ -451,22 +437,23 @@ function initApp() {
 
   render();
 
-  ['sel-year','sel-zeros'].forEach(id => document.getElementById(id).onchange = () => { buildPills(); render(); });
+  document.getElementById('sel-year').onchange = () => { buildPills(); render(); };
   document.getElementById('btn-refresh').onclick = loadData;
   document.getElementById('btn-reset-zoom').onclick = () => Object.values(charts).forEach(c => c.resetZoom?.());
 }
 
 // ── Helpers ───────────────────────────────────────────────────
 function getFiltered() {
-  const year  = document.getElementById('sel-year').value;
-  const zeros = document.getElementById('sel-zeros').value;
+  const year = document.getElementById('sel-year').value;
   return allData.filter(r => {
     if (year !== 'all' && r.anio !== parseInt(year)) return false;
-    if (zeros === 'no' && r.cantidad === 0) return false;
+    if (r.cantidad === 0) return false;
     if (!activeM.has(r.merkaz)) return false;
     return true;
   });
 }
+
+function colorFor(m) { return COLORS[merkazList.indexOf(m) % COLORS.length]; }
 
 function buildPills() {
   const c = document.getElementById('pills'); c.innerHTML = '';
@@ -480,76 +467,175 @@ function buildPills() {
     p.style.background = on ? COLORS[i % COLORS.length] + '18' : 'transparent';
     p.onclick = () => {
       const isSolo = activeM.size === 1 && activeM.has(m);
-      activeM = isSolo ? new Set(merkazList.filter(x => activeCat==='all' || merkCategories[x]===activeCat)) : new Set([m]);
+      activeM = isSolo ? new Set(merkazList.filter(x => activeCat==='all' || merkCat[x]===activeCat)) : new Set([m]);
       buildPills(); render();
     };
     c.appendChild(p);
   });
 }
 
-function colorFor(m) { return COLORS[merkazList.indexOf(m) % COLORS.length]; }
+// rolling average helper
+function rollingAvg(arr, n) {
+  return arr.map((_, i) => {
+    const slice = arr.slice(Math.max(0, i - n + 1), i + 1).filter(v => v != null);
+    return slice.length ? Math.round(slice.reduce((a,b)=>a+b,0)/slice.length) : null;
+  });
+}
+
+// heatmap color
+function heatColor(pct) {
+  if (pct === null) return '#111827';
+  if (pct === 0)    return '#1e2a3a';
+  // interpolate: low=#1e3a5f mid=#1d4ed8 high=#93c5fd
+  const t = Math.min(pct / 100, 1);
+  if (t < 0.5) {
+    const u = t * 2;
+    return lerpColor('#1e3a5f', '#1d4ed8', u);
+  } else {
+    const u = (t - 0.5) * 2;
+    return lerpColor('#1d4ed8', '#93c5fd', u);
+  }
+}
+function lerpColor(a, b, t) {
+  const ah = parseInt(a.slice(1),16), bh = parseInt(b.slice(1),16);
+  const ar = ah>>16, ag = (ah>>8)&0xff, ab = ah&0xff;
+  const br = bh>>16, bg = (bh>>8)&0xff, bb = bh&0xff;
+  const r = Math.round(ar + (br-ar)*t).toString(16).padStart(2,'0');
+  const g = Math.round(ag + (bg-ag)*t).toString(16).padStart(2,'0');
+  const bl = Math.round(ab + (bb-ab)*t).toString(16).padStart(2,'0');
+  return '#'+r+g+bl;
+}
 
 // ── KPIs ──────────────────────────────────────────────────────
 function renderKPIs(data) {
-  const nz = data.filter(r => r.cantidad > 0);
-  const total = nz.reduce((s,r) => s+r.cantidad, 0);
-  const byDate = {}; nz.forEach(r => { const k=r.dateObj.toISOString().slice(0,10); byDate[k]=(byDate[k]||0)+r.cantidad; });
-  const sortedDates = Object.keys(byDate).sort();
-  const avg = sortedDates.length ? Math.round(total / sortedDates.length) : 0;
-  const maxDate = sortedDates.reduce((a,b) => byDate[a]>=byDate[b]?a:b, sortedDates[0]);
-  const max = maxDate ? byDate[maxDate] : 0;
+  const total = data.reduce((s,r) => s+r.cantidad, 0);
+  const byDate = {}; data.forEach(r => { const k=r.dateObj.toISOString().slice(0,10); byDate[k]=(byDate[k]||0)+r.cantidad; });
+  const sortedD = Object.keys(byDate).sort();
+  const avg = sortedD.length ? Math.round(total / sortedD.length) : 0;
+  const maxDate = sortedD.reduce((a,b) => byDate[a]>=byDate[b]?a:b, sortedD[0]||'');
+  const maxVal = maxDate ? byDate[maxDate] : 0;
   const maxLabel = maxDate ? maxDate.split('-').reverse().join('/') : '';
-  const lastN = sortedDates.slice(-4), prevN = sortedDates.slice(-8,-4);
+  const lastN = sortedD.slice(-4), prevN = sortedD.slice(-8,-4);
   const sumL = lastN.reduce((s,d)=>s+(byDate[d]||0),0);
   const sumP = prevN.reduce((s,d)=>s+(byDate[d]||0),0);
-  const delta = sumP>0 ? Math.round((sumL-sumP)/sumP*100) : 0;
-
+  const delta = sumP > 0 ? Math.round((sumL-sumP)/sumP*100) : 0;
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">${sortedDates.length} sábados con asistencia</div></div>
-    <div class="kpi"><div class="kpi-label">Promedio por sábado</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 sábados atrás</div></div>
-    <div class="kpi"><div class="kpi-label">Mejor sábado</div><div class="kpi-value">${max.toLocaleString('es')}</div><div class="kpi-sub">Total del ${maxLabel}</div></div>
-    <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">${[...new Set(Object.values(merkCategories).filter((_,i)=>activeM.has(merkazList[i])))]}</div></div>
-  `;
+    <div class="kpi"><div class="kpi-label">Total asistentes</div><div class="kpi-value">${total.toLocaleString('es')}</div><div class="kpi-sub">${sortedD.length} sábados</div></div>
+    <div class="kpi"><div class="kpi-label">Promedio por sábado</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 sáb. atrás</div></div>
+    <div class="kpi"><div class="kpi-label">Mejor sábado</div><div class="kpi-value">${maxVal.toLocaleString('es')}</div><div class="kpi-sub">${maxLabel}</div></div>
+    <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">de ${merkazList.length} históricos</div></div>`;
 }
 
 // ── Chart defaults ────────────────────────────────────────────
 const CD = {
   plugins: { legend: { labels: { color:'#94a3b8', boxWidth:10, font:{size:11} } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es')} asistentes` } }
+    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es')}` } }
   },
   scales: {
-    x: { ticks:{ color:'#475569', maxRotation:45, font:{size:10} }, grid:{ color:'#1e2a3a' } },
-    y: { ticks:{ color:'#475569', font:{size:10} }, grid:{ color:'#1e3a5f33' } }
+    x: { ticks:{color:'#475569',maxRotation:45,font:{size:10}}, grid:{color:'#1e2a3a'} },
+    y: { ticks:{color:'#475569',font:{size:10}}, grid:{color:'#1e3a5f33'} }
   }
 };
-
 function destroyAll() { Object.values(charts).forEach(c => c.destroy()); charts = {}; }
 
-// 01 Monthly
+// 01 Monthly + rolling avg
 function renderMonthly(data) {
-  const nz = data.filter(r => r.cantidad > 0);
-  const byMonth = {};
-  nz.forEach(r => { const k=`${r.anio}-${String(r.mes).padStart(2,'0')}`; byMonth[k]=(byMonth[k]||0)+r.cantidad; });
-  const sorted = Object.keys(byMonth).sort();
-  const vals = sorted.map(k => byMonth[k]);
+  const byM = {};
+  data.forEach(r => { const k=`${r.anio}-${String(r.mes).padStart(2,'0')}`; byM[k]=(byM[k]||0)+r.cantidad; });
+  const sorted = Object.keys(byM).sort();
+  const vals = sorted.map(k => byM[k]);
+  const roll = rollingAvg(vals, 3);
   charts.monthly = new Chart(document.getElementById('chart-monthly'), {
-    type: 'line',
+    type: 'bar',
     data: {
-      labels: sorted.map(k => { const [y,m]=k.split('-'); return `${MONTH_NAMES[parseInt(m)-1]} ${y}`; }),
-      datasets: [{ label:'Total mensual', data:vals, borderColor:'#3b82f6', backgroundColor:'#3b82f618', borderWidth:2.5, pointRadius:4, pointHoverRadius:6, tension:0.35, fill:true }]
+      labels: sorted.map(k => { const [y,m]=k.split('-'); return `${MONTHS[parseInt(m)-1]} ${y.slice(2)}`; }),
+      datasets: [
+        { type:'bar',  label:'Total mensual', data:vals, backgroundColor:'#3b82f622', borderColor:'#3b82f655', borderWidth:1, borderRadius:3, order:2 },
+        { type:'line', label:'Media móvil 3m', data:roll, borderColor:'#3b82f6', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.4, spanGaps:true, order:1 }
+      ]
     },
-    options: { ...CD, plugins: { ...CD.plugins, zoom:{ zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}, pan:{enabled:true,mode:'x'} } } }
+    options: { ...CD, plugins:{...CD.plugins, zoom:{zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'}}} }
   });
 }
 
-// 02 Annual comparison
+// 02 Heatmap
+function renderHeatmap() {
+  const year = document.getElementById('sel-year').value;
+  const dataForHM = allData.filter(r => {
+    if (year !== 'all' && r.anio !== parseInt(year)) return false;
+    if (!activeM.has(r.merkaz)) return false;
+    return true;
+  });
+
+  // All months in range
+  const monthSet = new Set();
+  dataForHM.forEach(r => monthSet.add(`${r.anio}-${String(r.mes).padStart(2,'0')}`));
+  const allMonths = [...monthSet].sort();
+
+  // Per merkaz per month: sum and count
+  const byMM = {};
+  dataForHM.forEach(r => {
+    if (!byMM[r.merkaz]) byMM[r.merkaz] = {};
+    const k = `${r.anio}-${String(r.mes).padStart(2,'0')}`;
+    if (!byMM[r.merkaz][k]) byMM[r.merkaz][k] = { sum:0, cnt:0 };
+    if (r.cantidad > 0) { byMM[r.merkaz][k].sum += r.cantidad; byMM[r.merkaz][k].cnt++; }
+    else byMM[r.merkaz][k]; // mark as reported but 0
+  });
+
+  // Historical max per merkaz (all-time avg per month, for color scale)
+  const histMaxM = {};
+  allData.filter(r => r.cantidad > 0).forEach(r => {
+    histMaxM[r.merkaz] = Math.max(histMaxM[r.merkaz] || 0, r.cantidad);
+  });
+
+  // Sort merkazim: grandes first, then by avg desc
+  const msSorted = [...activeM].sort((a,b) => {
+    const catOrd = {grande:0, mediano:1, chico:2};
+    if (catOrd[merkCat[a]] !== catOrd[merkCat[b]]) return catOrd[merkCat[a]] - catOrd[merkCat[b]];
+    return (histMaxM[b]||0) - (histMaxM[a]||0);
+  });
+
+  let html = '<table class="heatmap"><thead><tr><th class="row-label"></th>';
+  allMonths.forEach(k => {
+    const [y,m] = k.split('-');
+    html += `<th class="col-label">${MONTHS[parseInt(m)-1]}<br><span style="font-size:.55rem;color:#334155">${y.slice(2)}</span></th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  msSorted.forEach(m => {
+    const catCls = merkCat[m] || 'chico';
+    html += `<tr><th class="row-label">${m} <span class="row-cat ${catCls}">${catCls}</span></th>`;
+    const mmax = histMaxM[m] || 1;
+    allMonths.forEach(k => {
+      const entry = byMM[m]?.[k];
+      if (!entry) {
+        html += `<td style="background:#0f1117" title="${m} · ${k}: sin datos"></td>`;
+      } else if (entry.cnt === 0) {
+        html += `<td style="background:#1a2030" title="${m} · ${k}: feriado/vacaciones">·</td>`;
+      } else {
+        const avg = Math.round(entry.sum / entry.cnt);
+        const pct = Math.round(avg / mmax * 100);
+        const col = heatColor(pct);
+        const textCol = pct > 60 ? '#0a0e1a' : '#94a3b8';
+        html += `<td style="background:${col};color:${textCol}" title="${m} · ${k}: ${avg} (${pct}% del máx.)">${avg}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('heatmap-wrap').innerHTML = html;
+}
+
+// 03 Annual comparison
 function renderAnnual(data) {
-  const nz = data.filter(r => r.cantidad > 0 && r.semana > 0);
+  const nz = data.filter(r => r.semana > 0);
   const years = [...new Set(nz.map(r => r.anio))].sort();
   const byYW = {};
   nz.forEach(r => { if(!byYW[r.anio]) byYW[r.anio]={}; byYW[r.anio][r.semana]=(byYW[r.anio][r.semana]||0)+r.cantidad; });
   const allWeeks = [...new Set(nz.map(r => r.semana))].sort((a,b)=>a-b);
-  const yearColors = ['#334155','#475569','#64748b','#3b82f6','#10b981','#f59e0b'];
+  const maxY = Math.max(...years);
+  const yearColors = ['#334155','#475569','#64748b','#60a5fa','#34d399','#fbbf24'];
   charts.annual = new Chart(document.getElementById('chart-annual'), {
     type: 'line',
     data: {
@@ -557,10 +643,10 @@ function renderAnnual(data) {
       datasets: years.map((y,i) => ({
         label: String(y),
         data: allWeeks.map(w => byYW[y]?.[w] ?? null),
-        borderColor: yearColors[i % yearColors.length],
+        borderColor: y===maxY ? '#60a5fa' : yearColors[i % yearColors.length],
         backgroundColor: 'transparent',
-        borderWidth: y===Math.max(...years) ? 3 : 1.5,
-        pointRadius: y===Math.max(...years) ? 3 : 1,
+        borderWidth: y===maxY ? 2.5 : 1,
+        pointRadius: y===maxY ? 2 : 0,
         pointHoverRadius: 5,
         spanGaps: false, tension: 0.3
       }))
@@ -569,151 +655,138 @@ function renderAnnual(data) {
   });
 }
 
-// 03 Health
-function renderHealth(filteredData) {
-  // Merkazim that appear in the filtered period (respects year filter)
-  const activeMInPeriod = new Set(filteredData.filter(r => r.cantidad > 0).map(r => r.merkaz));
+// 04 Individual lines + rolling avg
+function renderLines(data) {
+  const byM = {};
+  data.forEach(r => { if(!byM[r.merkaz]) byM[r.merkaz]={}; const k=r.dateObj.toISOString().slice(0,10); byM[r.merkaz][k]=(byM[r.merkaz][k]||0)+r.cantidad; });
+  const allDates = [...new Set(data.map(r=>r.dateObj.toISOString().slice(0,10)))].sort();
+  const labels = allDates.map(d => { const [y,m,day]=d.split('-'); return `${day}/${m}/${y.slice(2)}`; });
 
-  // Last 8 Saturdays in the filtered period where ANY merkaz reported
-  const datesInPeriod = [...new Set(filteredData.filter(r => r.cantidad > 0).map(r => r.dateObj.toISOString().slice(0,10)))].sort();
+  const datasets = [];
+  [...activeM].filter(m => byM[m]).forEach(m => {
+    const raw = allDates.map(d => byM[m][d] ?? null);
+    const smooth = rollingAvg(raw, 4);
+    const col = colorFor(m);
+    // raw data: faint
+    datasets.push({ label: m, data: raw, borderColor: col+'55', backgroundColor:'transparent', borderWidth:1, pointRadius:1.5, pointHoverRadius:4, spanGaps:false, tension:0.2, showLine:true });
+    // smoothed: bright
+    datasets.push({ label: m + ' (tend.)', data: smooth, borderColor: col, backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, spanGaps:true, tension:0.4 });
+  });
+
+  charts.lines = new Chart(document.getElementById('chart-lines'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: { ...CD,
+      plugins: { ...CD.plugins,
+        legend: { labels: { filter: item => !item.text.includes('(tend.)'), color:'#94a3b8', boxWidth:10, font:{size:11} } },
+        zoom: { zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}, pan:{enabled:true,mode:'x'} }
+      }
+    }
+  });
+}
+
+// 05 Health
+function renderHealth(filteredData) {
+  const activeMInPeriod = new Set(filteredData.map(r => r.merkaz));
+  const datesInPeriod = [...new Set(filteredData.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
   const last8dates = datesInPeriod.slice(-8);
 
-  // Build lookup: merkaz → date → quantity
   const byMDate = {};
-  allData.forEach(r => {
-    const k = r.dateObj.toISOString().slice(0,10);
-    if (!byMDate[r.merkaz]) byMDate[r.merkaz] = {};
-    byMDate[r.merkaz][k] = (byMDate[r.merkaz][k] || 0) + r.cantidad;
-  });
-
-  // Historical max per merkaz (all time, non-zero)
+  allData.forEach(r => { if(!byMDate[r.merkaz]) byMDate[r.merkaz]={}; const k=r.dateObj.toISOString().slice(0,10); byMDate[r.merkaz][k]=(byMDate[r.merkaz][k]||0)+r.cantidad; });
   const histMaxM = {};
-  allData.filter(r => r.cantidad > 0).forEach(r => {
-    histMaxM[r.merkaz] = Math.max(histMaxM[r.merkaz] || 0, r.cantidad);
-  });
+  allData.filter(r=>r.cantidad>0).forEach(r => { histMaxM[r.merkaz]=Math.max(histMaxM[r.merkaz]||0,r.cantidad); });
 
   const health = {};
   merkazList.filter(m => activeM.has(m) && activeMInPeriod.has(m)).forEach(m => {
-    const vals = last8dates.map(d => byMDate[m]?.[d] ?? 0); // 0 if didn't report
-    const avg8 = Math.round(vals.reduce((s,v)=>s+v,0) / 8);
-    const showed = vals.filter(v => v > 0).length; // how many of 8 they attended
+    const vals = last8dates.map(d => byMDate[m]?.[d] ?? 0);
+    const avg8  = Math.round(vals.reduce((s,v)=>s+v,0)/8);
+    const showed = vals.filter(v=>v>0).length;
     const histMax = histMaxM[m] || 1;
-    health[m] = { avg8, histMax, showed, pct: Math.round(avg8 / histMax * 100) };
+    health[m] = { avg8, histMax, showed, pct: Math.round(avg8/histMax*100) };
   });
-  const ms = Object.keys(health).sort((a,b)=>health[b].pct-health[a].pct);
-  const pcts = ms.map(m=>health[m].pct);
+
+  const ms = Object.keys(health).sort((a,b) => health[b].pct-health[a].pct);
+  const pcts = ms.map(m => health[m].pct);
   charts.health = new Chart(document.getElementById('chart-health'), {
     type: 'bar',
-    data: {
-      labels: ms,
-      datasets: [{
-        label:'% del máximo histórico', data:pcts,
-        backgroundColor: pcts.map(p => p>=65?'#10b98199':p>=40?'#f59e0b99':'#ef444499'),
-        borderColor:     pcts.map(p => p>=65?'#10b981':p>=40?'#f59e0b':'#ef4444'),
-        borderWidth:1.5, borderRadius:4
-      }]
-    },
-    options: {
-      indexAxis:'y', ...CD,
+    data: { labels:ms, datasets:[{ label:'% del máximo', data:pcts,
+      backgroundColor: pcts.map(p=>p>=65?'#10b98199':p>=40?'#f59e0b99':'#ef444499'),
+      borderColor:     pcts.map(p=>p>=65?'#10b981':p>=40?'#f59e0b':'#ef4444'),
+      borderWidth:1.5, borderRadius:4 }] },
+    options: { indexAxis:'y', ...CD,
       plugins:{ ...CD.plugins, legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => { const h=health[ms[ctx.dataIndex]]; return ` ${ctx.raw}% — ${h.avg8} prom. · ${h.showed}/8 sábados · máx. hist. ${h.histMax}`; } } }
+        tooltip:{callbacks:{label:ctx=>{ const h=health[ms[ctx.dataIndex]]; return ` ${ctx.raw}% — ${h.avg8} prom. · ${h.showed}/8 sáb. · máx. ${h.histMax}`; }}}
       },
-      scales:{ x:{...CD.scales.x, max:100, ticks:{...CD.scales.x.ticks, callback:v=>v+'%'}}, y:{...CD.scales.y} }
+      scales:{ x:{...CD.scales.x,max:100,ticks:{...CD.scales.x.ticks,callback:v=>v+'%'}}, y:{...CD.scales.y} }
     }
   });
-  const list = document.getElementById('health-list');
-  list.innerHTML = '';
+
+  const list = document.getElementById('health-list'); list.innerHTML = '';
   ms.forEach(m => {
-    const {avg8, histMax, pct, showed} = health[m];
+    const {avg8,histMax,pct,showed} = health[m];
     const cls = pct>=65?'green':pct>=40?'yellow':'red';
     const col = pct>=65?'#10b981':pct>=40?'#f59e0b':'#ef4444';
     list.innerHTML += `<div class="health-item">
-      <div class="health-header"><span class="health-name">${m}</span><span class="health-pct ${cls}">${pct}%</span></div>
-      <div class="health-bar-bg"><div class="health-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-      <div class="health-detail">Últ. 8 sáb.: ${avg8} prom. · ${showed}/8 sáb. activos · Máx. hist.: ${histMax}</div>
+      <div class="h-hdr"><span class="h-name">${m}</span><span class="h-pct ${cls}">${pct}%</span></div>
+      <div class="h-bar-bg"><div class="h-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="h-detail">${avg8} prom. · ${showed}/8 sáb. · máx. hist. ${histMax}</div>
     </div>`;
   });
 }
 
-// 04 Lines
-function renderLines(data) {
-  const nz = data.filter(r => r.cantidad > 0);
-  const byM = {};
-  nz.forEach(r => { if(!byM[r.merkaz]) byM[r.merkaz]={}; const k=r.dateObj.toISOString().slice(0,10); byM[r.merkaz][k]=(byM[r.merkaz][k]||0)+r.cantidad; });
-  const allDates = [...new Set(nz.map(r=>r.dateObj.toISOString().slice(0,10)))].sort();
-  charts.lines = new Chart(document.getElementById('chart-lines'), {
-    type: 'line',
-    data: {
-      labels: allDates.map(d => { const [y,m,day]=d.split('-'); return `${day}/${m}/${y.slice(2)}`; }),
-      datasets: [...activeM].filter(m=>byM[m]).map(m => ({
-        label:m, data:allDates.map(d=>byM[m][d]??null),
-        borderColor:colorFor(m), backgroundColor:colorFor(m)+'18',
-        borderWidth:2, pointRadius:2, pointHoverRadius:5, spanGaps:false, tension:0.3
-      }))
-    },
-    options: { ...CD, plugins: { ...CD.plugins, zoom:{ zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}, pan:{enabled:true,mode:'x'} } } }
-  });
-}
-
-// 05 Seasonal
-function renderSeasonal() {
-  const nz = allData.filter(r => r.cantidad>0 && r.mes>=1 && r.mes<=12 && activeM.has(r.merkaz));
-  const ym = {}; nz.forEach(r => { const k=`${r.anio}-${r.mes}`; ym[k]=(ym[k]||0)+r.cantidad; });
-  const mTot={}, mCnt={};
-  Object.entries(ym).forEach(([k,v]) => { const m=parseInt(k.split('-')[1]); mTot[m]=(mTot[m]||0)+v; mCnt[m]=(mCnt[m]||0)+1; });
-  const avgs = Array.from({length:12},(_,i)=>mTot[i+1]?Math.round(mTot[i+1]/mCnt[i+1]):0);
-  const maxV = Math.max(...avgs);
-  charts.seasonal = new Chart(document.getElementById('chart-seasonal'), {
-    type:'bar',
-    data:{ labels:MONTH_NAMES, datasets:[{ label:'Promedio histórico', data:avgs,
-      backgroundColor:avgs.map(v=>v===maxV?'#10b98199':'#3b82f644'),
-      borderColor:avgs.map(v=>v===maxV?'#10b981':'#3b82f6'),
-      borderWidth:1.5, borderRadius:4 }] },
-    options:{ ...CD, plugins:{...CD.plugins, legend:{display:false},
-      tooltip:{callbacks:{label:ctx=>` ${Number(ctx.raw).toLocaleString('es')} asistentes promedio`}} } }
-  });
-}
-
-// 06 Summary table
+// 06 Table
 function renderTable() {
-  const nz = allData.filter(r => r.cantidad > 0);
+  const now = new Date();
   const byM = {};
-  nz.forEach(r => { if(!byM[r.merkaz]) byM[r.merkaz]=[]; byM[r.merkaz].push({date:r.dateObj,qty:r.cantidad,fecha:r.fecha}); });
+  allData.filter(r => r.cantidad > 0).forEach(r => { if(!byM[r.merkaz]) byM[r.merkaz]=[]; byM[r.merkaz].push({date:r.dateObj,qty:r.cantidad,fecha:r.fecha}); });
+
+  // Last 8 global dates for avg8
+  const allDates = [...new Set(allData.map(r=>r.dateObj.toISOString().slice(0,10)))].sort();
+  const last8dates = allDates.slice(-8);
+  const byMDate = {};
+  allData.forEach(r => { if(!byMDate[r.merkaz]) byMDate[r.merkaz]={}; const k=r.dateObj.toISOString().slice(0,10); byMDate[r.merkaz][k]=(byMDate[r.merkaz][k]||0)+r.cantidad; });
+
   const rows = [];
-  Object.entries(byM).forEach(([m,sessions]) => {
-    if (!activeM.has(m)) return;
-    sessions.sort((a,b)=>a.date-b.date);
-    const last8 = sessions.slice(-8);
-    const avg8 = Math.round(last8.reduce((s,x)=>s+x.qty,0)/last8.length);
+  merkazList.filter(m => activeM.has(m)).forEach(m => {
+    const sessions = (byM[m]||[]).sort((a,b)=>a.date-b.date);
+    if (!sessions.length) return;
+    const last = sessions[sessions.length-1];
     const histAvg = Math.round(sessions.reduce((s,x)=>s+x.qty,0)/sessions.length);
     const histMax = Math.max(...sessions.map(s=>s.qty));
-    const last = sessions[sessions.length-1];
-    rows.push({ m, cat:merkCategories[m]||'chico', fecha:last.fecha, lastQty:last.qty, avg8, histAvg, histMax, total:sessions.length });
+    const vals8 = last8dates.map(d => byMDate[m]?.[d] ?? 0);
+    const avg8 = Math.round(vals8.reduce((s,v)=>s+v,0)/8);
+    const daysSince = Math.round((now - last.date) / 86400000);
+    const status = daysSince <= 14 ? 'green' : daysSince <= 60 ? 'yellow' : 'red';
+    const statusLabel = daysSince <= 14 ? 'Activo' : daysSince <= 60 ? 'Pausa' : 'Inactivo';
+    rows.push({ m, cat:merkCat[m]||'chico', fecha:last.fecha, lastQty:last.qty, avg8, histAvg, histMax, total:sessions.length, status, statusLabel });
   });
   rows.sort((a,b) => new Date(b.fecha.split('/').reverse().join('-')) - new Date(a.fecha.split('/').reverse().join('-')));
-  document.getElementById('summary-body').innerHTML = rows.map(r => `
+
+  const statusColor = { green:'#10b981', yellow:'#f59e0b', red:'#ef4444' };
+  document.getElementById('tbl-body').innerHTML = rows.map(r => `
     <tr>
       <td><strong>${r.m}</strong></td>
-      <td><span class="td-cat ${r.cat}">${r.cat}</span></td>
+      <td><span class="tc ${r.cat}">${r.cat}</span></td>
+      <td><span class="status-dot" style="background:${statusColor[r.status]}"></span>${r.statusLabel}</td>
       <td>${r.fecha}</td>
-      <td class="td-num">${r.lastQty}</td>
-      <td class="td-num">${r.avg8}</td>
-      <td class="td-num">${r.histAvg}</td>
-      <td class="td-num">${r.histMax}</td>
-      <td class="td-num">${r.total}</td>
+      <td class="tn">${r.lastQty}</td>
+      <td class="tn">${r.avg8}</td>
+      <td class="tn">${r.histAvg}</td>
+      <td class="tn">${r.histMax}</td>
+      <td class="tn">${r.total}</td>
     </tr>`).join('');
 }
 
-// ── Render all ────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────
 function render() {
   destroyAll();
   const data = getFiltered();
   renderKPIs(data);
   renderMonthly(data);
+  renderHeatmap();
   renderAnnual(data);
-  renderHealth(data);
   renderLines(data);
-  renderSeasonal();
+  renderHealth(data);
   renderTable();
 }
 
