@@ -4,127 +4,331 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Asistencia Merkazim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://accounts.google.com/gsi/client"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:#0f1117; --surface:#1a1f2e; --border:#252d3d;
-      --text:#e2e8f0; --muted:#64748b;
-      --accent:#3b82f6; --green:#10b981; --yellow:#f59e0b; --red:#ef4444;
+      --hl-ink: #1c2a5e;
+      --hl-crema: #f5f3ec;
+      --hl-accent: #e8e337;
+      --hl-accent-ink: #1c2a5e;
+      --hl-border: #2456a6;
+      --hl-focus: #5f4ea3;
+      --hl-tint: #dbe6f8;
+      --hl-label: #5f4ea3;
+      --hl-muted: #8d96b8;
+      --hl-error: #c0392b;
+      --hl-rosa: #ef9fc0;
+      --hl-rosa-oscuro: #d0648f;
+      --hl-f-black: 'Archivo Black', system-ui, sans-serif;
+      --hl-f-body: 'Archivo', system-ui, sans-serif;
+      --hl-f-mono: 'Space Mono', ui-monospace, monospace;
+      --hl-r-card: 26px;
+      --hl-r-field: 12px;
+      --hl-r-btn: 14px;
+      --hl-r-pill: 999px;
+      --hl-shadow-card: 0 6px 0 var(--hl-ink);
+      --hl-shadow-btn: 0 4px 0 var(--hl-ink);
     }
-    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--hl-f-body);
+      background: var(--hl-crema);
+      color: var(--hl-ink);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    header { background:var(--surface); border-bottom:1px solid var(--border); padding:1rem 1.5rem; display:flex; align-items:center; gap:1rem; }
-    .logo { font-size:1.2rem; font-weight:800; color:#f1f5f9; }
-    .logo span { color:var(--accent); }
-    .hdr-r { margin-left:auto; display:flex; align-items:center; gap:.75rem; }
-    #btn-logout { font-size:.75rem; padding:.3rem .8rem; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:none; }
-    #btn-logout:hover { border-color:var(--red); color:#f87171; }
+    /* ── Topbar ── */
+    .hl-topbar {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 32px;
+      border-bottom: 3px solid var(--hl-ink);
+      background: var(--hl-crema);
+    }
+    .hl-topbar__logo {
+      font-family: var(--hl-f-black);
+      font-size: 18px;
+      text-transform: uppercase;
+      color: var(--hl-ink);
+      line-height: 1;
+    }
+    .hl-topbar__logo span { color: var(--hl-border); }
+    .hl-topbar__sub {
+      font-family: var(--hl-f-mono);
+      font-size: 11px;
+      color: var(--hl-muted);
+      letter-spacing: .1em;
+    }
+    .hl-topbar__right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    #btn-logout {
+      font-family: var(--hl-f-mono); font-size: 11px; letter-spacing: .08em;
+      text-decoration: underline; text-underline-offset: 3px;
+      background: none; border: none; color: var(--hl-label); cursor: pointer;
+      display: none;
+    }
+    #btn-logout:hover { color: var(--hl-error); }
 
-    /* Login */
-    #login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:2rem; }
-    .login-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:2.5rem; max-width:380px; width:100%; text-align:center; }
-    .login-card h2 { font-size:1.2rem; margin-bottom:.5rem; }
-    .login-card p { color:var(--muted); font-size:.875rem; line-height:1.6; margin-bottom:1.5rem; }
-    #btn-glogin { width:100%; background:white; color:#1f2937; border:none; padding:.75rem 1.5rem; border-radius:.6rem; font-size:.9rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.75rem; }
-    #btn-glogin:hover { box-shadow:0 0 0 3px #3b82f644; }
+    /* ── Login ── */
+    #login-screen {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 80vh; padding: 2rem;
+    }
+    .login-card {
+      background: #fff;
+      border: 3px solid var(--hl-ink);
+      border-radius: var(--hl-r-card);
+      padding: 40px;
+      max-width: 400px; width: 100%;
+      box-shadow: var(--hl-shadow-card);
+    }
+    .login-bubble {
+      position: relative; display: inline-block;
+      background: var(--hl-accent); color: var(--hl-accent-ink);
+      padding: 18px 24px; border-radius: 18px; margin-bottom: 28px;
+    }
+    .login-bubble::after {
+      content: ''; position: absolute; bottom: -16px; left: 32px;
+      border-left: 18px solid transparent;
+      border-top: 18px solid var(--hl-accent);
+    }
+    .login-bubble p { font-family: var(--hl-f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .login-bubble h2 { font-family: var(--hl-f-black); font-size: 32px; line-height: .95; margin-top: 6px; }
+    .login-card > p { font-size: 15px; color: var(--hl-ink); line-height: 1.6; margin-bottom: 24px; }
+    #btn-glogin {
+      width: 100%; background: var(--hl-ink); color: #fff;
+      border: 2px solid var(--hl-ink); border-radius: var(--hl-r-btn);
+      padding: 14px 24px; font-family: var(--hl-f-black); font-size: 15px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: var(--hl-shadow-btn);
+      transition: transform .14s, box-shadow .14s;
+    }
+    #btn-glogin:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--hl-focus); }
 
-    #loading { display:none; align-items:center; justify-content:center; min-height:60vh; flex-direction:column; gap:1rem; color:var(--muted); }
-    .spinner { width:2rem; height:2rem; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .error-box { color:#f87171; text-align:center; padding:2rem; font-size:.9rem; line-height:1.7; max-width:480px; }
+    /* ── Loading ── */
+    #loading {
+      display: none; align-items: center; justify-content: center;
+      min-height: 60vh; flex-direction: column; gap: 16px;
+    }
+    .spinner {
+      width: 2rem; height: 2rem;
+      border: 3px solid var(--hl-tint);
+      border-top-color: var(--hl-border);
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    .spinner-label { font-family: var(--hl-f-mono); font-size: 12px; letter-spacing: .1em; color: var(--hl-muted); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box {
+      font-family: var(--hl-f-mono); font-size: 13px; color: var(--hl-error);
+      text-align: center; padding: 2rem; line-height: 1.7; max-width: 480px;
+    }
 
-    #app { display:none; }
+    #app { display: none; }
 
-    /* Filterbar */
-    .filterbar { background:var(--surface); border-bottom:1px solid var(--border); padding:.65rem 1.5rem; display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; }
-    .filterbar label { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-    select { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.3rem .6rem; border-radius:.4rem; font-size:.8rem; cursor:pointer; }
-    .sep { width:1px; height:1.5rem; background:var(--border); }
-    .pill-bar { display:flex; flex-wrap:wrap; gap:.3rem; }
-    .mpill { padding:.18rem .55rem; border-radius:999px; font-size:.68rem; border:1px solid; cursor:pointer; user-select:none; transition:opacity .15s; }
-    .mpill.off { opacity:.2; }
-    .btn { padding:.3rem .75rem; border-radius:.4rem; font-size:.78rem; cursor:pointer; border:1px solid; font-weight:600; }
-    .btn-primary { background:var(--accent); border-color:#2563eb; color:white; }
-    .btn-ghost { background:transparent; border-color:var(--border); color:var(--muted); font-weight:400; }
-    .cat-tabs { display:flex; gap:.3rem; }
-    .cat-tab { padding:.2rem .65rem; border-radius:999px; font-size:.72rem; border:1px solid var(--border); color:var(--muted); cursor:pointer; background:transparent; }
-    .cat-tab.active { background:var(--accent); border-color:var(--accent); color:white; font-weight:600; }
+    /* ── Filterbar ── */
+    .filterbar {
+      background: var(--hl-tint);
+      border-bottom: 3px solid var(--hl-ink);
+      padding: 10px 32px;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+    .filterbar label {
+      font-family: var(--hl-f-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--hl-label);
+    }
+    select {
+      font-family: var(--hl-f-mono); font-size: 11px;
+      background: #fff; border: 2px solid var(--hl-border);
+      color: var(--hl-ink); padding: 6px 10px;
+      border-radius: var(--hl-r-field); cursor: pointer; outline: none;
+    }
+    select:focus { border-color: var(--hl-focus); box-shadow: 0 0 0 3px var(--hl-tint); }
+    .sep { width: 1px; height: 24px; background: var(--hl-border); opacity: .3; }
+    .pill-bar { display: flex; flex-wrap: wrap; gap: 4px; }
+    .mpill {
+      font-family: var(--hl-f-mono); font-size: 10px; font-weight: 700;
+      padding: 4px 10px; border-radius: var(--hl-r-pill);
+      border: 2px solid; cursor: pointer; user-select: none;
+      transition: opacity .15s, box-shadow .14s;
+    }
+    .mpill.on { box-shadow: 0 3px 0 var(--hl-ink); }
+    .mpill.off { opacity: .3; box-shadow: none; }
+    .cat-tabs { display: flex; gap: 4px; }
+    .cat-tab {
+      font-family: var(--hl-f-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: var(--hl-r-pill);
+      border: 2px solid var(--hl-border); color: var(--hl-label);
+      cursor: pointer; background: #fff;
+      transition: background .12s, box-shadow .12s;
+    }
+    .cat-tab.active {
+      background: var(--hl-accent); color: var(--hl-accent-ink);
+      border-color: var(--hl-ink); box-shadow: 0 3px 0 var(--hl-ink);
+    }
+    .hl-btn {
+      font-family: var(--hl-f-black); font-size: 13px; cursor: pointer;
+      border: 2px solid var(--hl-ink); border-radius: var(--hl-r-btn);
+      padding: 8px 18px;
+      background: var(--hl-accent); color: var(--hl-accent-ink);
+      box-shadow: var(--hl-shadow-btn);
+      transition: transform .14s, box-shadow .14s;
+    }
+    .hl-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--hl-ink); }
 
-    /* KPIs */
-    .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.75rem; padding:1.25rem 1.5rem; }
-    .kpi { background:var(--surface); border:1px solid var(--border); border-radius:.75rem; padding:1rem 1.25rem; }
-    .kpi-label { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-    .kpi-value { font-size:1.7rem; font-weight:800; color:#f1f5f9; margin-top:.15rem; line-height:1; }
-    .kpi-sub { font-size:.7rem; color:var(--muted); margin-top:.3rem; }
-    .kpi-delta { font-size:.7rem; margin-top:.3rem; font-weight:600; }
-    .kpi-delta.up { color:var(--green); } .kpi-delta.down { color:var(--red); }
+    /* ── KPI row ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px; padding: 24px 32px;
+    }
+    .hl-stat {
+      background: #fff; border: 2px solid var(--hl-ink);
+      border-radius: 16px; padding: 20px;
+      display: flex; flex-direction: column; gap: 4px;
+      box-shadow: 0 3px 0 var(--hl-ink);
+    }
+    .hl-stat__label {
+      font-family: var(--hl-f-mono); font-weight: 700; font-size: 10px;
+      letter-spacing: .1em; color: var(--hl-label); text-transform: uppercase;
+    }
+    .hl-stat__value {
+      font-family: var(--hl-f-black); font-size: 34px; color: var(--hl-ink); line-height: 1;
+    }
+    .hl-stat__value.highlight { color: var(--hl-border); }
+    .hl-stat__meta {
+      font-family: var(--hl-f-mono); font-size: 11px; color: var(--hl-muted);
+    }
+    .hl-stat__delta {
+      font-family: var(--hl-f-mono); font-size: 11px; font-weight: 700;
+    }
+    .hl-stat__delta.up { color: #1a7f5a; }
+    .hl-stat__delta.down { color: var(--hl-error); }
 
-    /* Main layout */
-    .content { padding:1.25rem 1.5rem 3rem; display:flex; flex-direction:column; gap:1.5rem; }
-    .card { background:var(--surface); border:1px solid var(--border); border-radius:.875rem; padding:1.25rem; }
-    .card-title { font-size:.9rem; font-weight:700; color:#f1f5f9; margin-bottom:.2rem; }
-    .card-sub { font-size:.73rem; color:var(--muted); margin-bottom:1rem; }
-    canvas { max-height:320px; }
+    /* ── Content / panels ── */
+    .content { padding: 0 32px 48px; display: flex; flex-direction: column; gap: 20px; }
+    .hl-panel {
+      background: #fff; border: 2px solid var(--hl-ink);
+      border-radius: var(--hl-r-card); overflow: hidden;
+    }
+    .hl-panel__head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px; border-bottom: 2px solid var(--hl-tint);
+      background: var(--hl-crema);
+    }
+    .hl-panel__title {
+      font-family: var(--hl-f-black); font-size: 15px; text-transform: uppercase;
+      color: var(--hl-ink);
+    }
+    .hl-panel__sub {
+      font-family: var(--hl-f-mono); font-size: 11px; color: var(--hl-muted);
+      margin-top: 2px;
+    }
+    .hl-panel__body { padding: 24px; }
+    canvas { max-height: 300px; }
 
-    /* Health bars */
-    .health-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:.75rem; margin-top:.5rem; }
-    .health-item { background:var(--bg); border-radius:.6rem; padding:.75rem 1rem; }
-    .h-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.4rem; }
-    .h-name { font-size:.8rem; font-weight:600; }
-    .h-pct { font-size:.85rem; font-weight:800; }
-    .h-pct.green { color:var(--green); } .h-pct.yellow { color:var(--yellow); } .h-pct.red { color:var(--red); }
-    .h-bar-bg { height:5px; background:var(--border); border-radius:999px; overflow:hidden; }
-    .h-bar-fill { height:100%; border-radius:999px; }
-    .h-detail { font-size:.64rem; color:var(--muted); margin-top:.3rem; }
+    /* ── Health grid ── */
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .health-item {
+      background: var(--hl-crema); border: 2px solid var(--hl-ink);
+      border-radius: 14px; padding: 14px 16px;
+    }
+    .h-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .h-name { font-family: var(--hl-f-body); font-weight: 700; font-size: 13px; color: var(--hl-ink); }
+    .h-pct { font-family: var(--hl-f-black); font-size: 18px; }
+    .h-pct.verde  { color: #1a7f5a; }
+    .h-pct.amarillo { color: #a07800; }
+    .h-pct.rojo   { color: var(--hl-error); }
+    .h-bar-bg { height: 6px; background: var(--hl-tint); border-radius: 999px; overflow: hidden; border: 1px solid var(--hl-ink); }
+    .h-bar-fill { height: 100%; border-radius: 999px; }
+    .h-detail { font-family: var(--hl-f-mono); font-size: 10px; color: var(--hl-muted); margin-top: 6px; }
 
-    /* Table */
-    .table-wrap { overflow-x:auto; margin-top:.75rem; }
-    table { width:100%; border-collapse:collapse; font-size:.78rem; }
-    th { background:var(--bg); color:var(--muted); font-size:.63rem; text-transform:uppercase; letter-spacing:.05em; padding:.5rem .75rem; text-align:left; border-bottom:1px solid var(--border); }
-    td { padding:.4rem .75rem; border-bottom:1px solid var(--border); }
-    tr:hover td { background:#1e2a3a44; }
-    .tn { text-align:right; font-variant-numeric:tabular-nums; }
-    .status-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:.4rem; }
-    .tc { font-size:.63rem; padding:.1rem .45rem; border-radius:999px; border:1px solid; }
-    .tc.grande  { border-color:#8b5cf6; color:#a78bfa; }
-    .tc.mediano { border-color:#3b82f6; color:#60a5fa; }
-    .tc.chico   { border-color:#64748b; color:#94a3b8; }
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    .hl-table { width: 100%; border-collapse: collapse; background: #fff; }
+    .hl-table th {
+      font-family: var(--hl-f-mono); font-weight: 700; font-size: 10px;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--hl-label); text-align: left;
+      padding: 12px 16px; border-bottom: 2px solid var(--hl-ink);
+    }
+    .hl-table td { padding: 12px 16px; border-bottom: 2px solid var(--hl-tint); font-size: 14px; }
+    .hl-table tbody tr:hover { background: #f9f8f2; }
+    .hl-table .tn { text-align: right; font-family: var(--hl-f-mono); font-variant-numeric: tabular-nums; }
+    .hl-badge {
+      font-family: var(--hl-f-mono); font-weight: 700; font-size: 9px;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: var(--hl-r-pill);
+    }
+    .hl-badge--grande  { background: #e6e2f7; color: var(--hl-focus); }
+    .hl-badge--mediano { background: var(--hl-tint); color: var(--hl-border); }
+    .hl-badge--chico   { background: #eceadf; color: var(--hl-muted); }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; border: 1px solid var(--hl-ink); }
 
-    @media(max-width:600px) {
-      .filterbar { padding:.6rem 1rem; }
-      .kpi-row, .content { padding-left:1rem; padding-right:1rem; }
-      .kpi-value { font-size:1.4rem; }
+    /* ── Footer ── */
+    .hl-footer {
+      border-top: 3px solid var(--hl-ink); background: var(--hl-tint);
+      padding: 16px 32px; text-align: center;
+    }
+    .hl-footer__brand {
+      font-family: var(--hl-f-mono); font-weight: 700; font-size: 10px;
+      letter-spacing: .18em; color: var(--hl-label); text-transform: uppercase;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hl-topbar { padding: 12px 16px; }
+      .filterbar { padding: 8px 16px; }
+      .kpi-row { padding: 16px; gap: 10px; }
+      .content { padding: 0 16px 40px; }
+      .hl-stat__value { font-size: 26px; }
+      .hl-topbar__sub { display: none; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">Dash<span>Tnu'a</span></div>
-  <div class="hdr-r">
-    <button id="btn-logout">Cerrar sesión</button>
+<header class="hl-topbar">
+  <div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span></div>
+    <div class="hl-topbar__sub">ASISTENCIA ✳ MERKAZIM</div>
+  </div>
+  <div class="hl-topbar__right">
+    <button id="btn-logout">CERRAR SESIÓN</button>
   </div>
 </header>
 
 <div id="login-screen">
   <div class="login-card">
-    <h2>Dashboard de Asistencia</h2>
-    <p>Iniciá sesión con tu cuenta de Google para acceder al dashboard.</p>
+    <div class="login-bubble">
+      <p>HEJALUTZ LAMERJAV ✳</p>
+      <h2>DASHBOARD<br>DE ASISTENCIA</h2>
+    </div>
+    <p>Iniciá sesión con tu cuenta de Google para acceder al dashboard de merkazim.</p>
     <button id="btn-glogin">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Iniciar sesión con Google
+      INICIAR SESIÓN CON GOOGLE
     </button>
   </div>
 </div>
 
-<div id="loading"><div class="spinner"></div><p>Cargando datos…</p></div>
+<div id="loading">
+  <div class="spinner"></div>
+  <p class="spinner-label">CARGANDO DATOS…</p>
+</div>
 
 <div id="app">
+
   <div class="filterbar">
     <label>Año</label>
-    <select id="sel-year"><option value="all">Todos</option></select>
+    <select id="sel-year"><option value="all">Todos los años</option></select>
     <div class="sep"></div>
     <label>Cat.</label>
     <div class="cat-tabs">
@@ -136,7 +340,7 @@
     <div class="sep"></div>
     <div class="pill-bar" id="pills"></div>
     <div style="margin-left:auto">
-      <button class="btn btn-primary" id="btn-refresh">↺ Actualizar</button>
+      <button class="hl-btn" id="btn-refresh">↺ ACTUALIZAR</button>
     </div>
   </div>
 
@@ -144,47 +348,74 @@
 
   <div class="content">
 
-    <!-- Tendencia mensual -->
-    <div class="card">
-      <div class="card-title">Asistencia mensual</div>
-      <div class="card-sub">Total de asistentes por mes en el período seleccionado.</div>
-      <canvas id="chart-monthly"></canvas>
+    <div class="hl-panel">
+      <div class="hl-panel__head">
+        <div>
+          <div class="hl-panel__title">Asistencia mensual</div>
+          <div class="hl-panel__sub">Total de asistentes por mes en el período seleccionado.</div>
+        </div>
+      </div>
+      <div class="hl-panel__body">
+        <canvas id="chart-monthly"></canvas>
+      </div>
     </div>
 
-    <!-- Comparación anual -->
-    <div class="card">
-      <div class="card-title">Comparación por año</div>
-      <div class="card-sub">Asistencia total por semana del año. Cada línea es un año — así podés ver si este año está mejor o peor que el anterior en el mismo período.</div>
-      <canvas id="chart-annual"></canvas>
+    <div class="hl-panel">
+      <div class="hl-panel__head">
+        <div>
+          <div class="hl-panel__title">Comparación por año</div>
+          <div class="hl-panel__sub">Asistencia por semana del año — una línea por año para comparar el mismo período.</div>
+        </div>
+      </div>
+      <div class="hl-panel__body">
+        <canvas id="chart-annual"></canvas>
+      </div>
     </div>
 
-    <!-- Estado actual -->
-    <div class="card">
-      <div class="card-title">Estado actual por merkaz</div>
-      <div class="card-sub">Promedio de los últimos 8 sábados activos de la tnu'a, como % del máximo histórico de cada merkaz. Verde &gt;65% · Amarillo 40–65% · Rojo &lt;40%.</div>
-      <div class="health-grid" id="health-grid"></div>
+    <div class="hl-panel">
+      <div class="hl-panel__head">
+        <div>
+          <div class="hl-panel__title">Estado actual por merkaz</div>
+          <div class="hl-panel__sub">Promedio de los últimos 8 sábados activos como % del máximo histórico de cada merkaz.</div>
+        </div>
+      </div>
+      <div class="hl-panel__body">
+        <div class="health-grid" id="health-grid"></div>
+      </div>
     </div>
 
-    <!-- Tabla -->
-    <div class="card">
-      <div class="card-title">Resumen por merkaz</div>
-      <div class="card-sub">El punto indica actividad: verde = activo (≤14 días), amarillo = en pausa (≤60 días), rojo = inactivo.</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Merkaz</th><th>Cat.</th><th>Estado</th>
-              <th>Última peulá</th><th class="tn">Últ. asist.</th>
-              <th class="tn">Prom. hist.</th><th class="tn">Máx. hist.</th>
-              <th class="tn">Peulot</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-body"></tbody>
-        </table>
+    <div class="hl-panel">
+      <div class="hl-panel__head">
+        <div>
+          <div class="hl-panel__title">Resumen por merkaz</div>
+          <div class="hl-panel__sub">El punto indica actividad: verde = activo (≤14 días) · amarillo = pausa (≤60 días) · rojo = inactivo.</div>
+        </div>
+      </div>
+      <div class="hl-panel__body" style="padding:0">
+        <div class="table-wrap">
+          <table class="hl-table">
+            <thead>
+              <tr>
+                <th>Merkaz</th><th>Cat.</th><th>Estado</th>
+                <th>Última peulá</th>
+                <th class="tn">Últ. asist.</th>
+                <th class="tn">Prom. hist.</th>
+                <th class="tn">Máx. hist.</th>
+                <th class="tn">Peulot</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
   </div>
+
+  <footer class="hl-footer">
+    <div class="hl-footer__brand">POWERED BY ✳ RUAJ · HEJALUTZ LAMERJAV</div>
+  </footer>
+
 </div>
 
 <script>
@@ -194,7 +425,26 @@ const SHEET_NAME = 'Tabla larga';
 const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const ALIASES    = { 'Beit Israel': 'Metzadá' };
 const MONTHS     = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const COLORS     = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#e11d48','#0ea5e9','#22c55e','#eab308','#6366f1'];
+
+// Palette from ruaj-theme: azul, violeta, rosa, amarillo cycling
+const COLORS = ['#2456a6','#5f4ea3','#d0648f','#a07800','#1a7f5a','#c0392b','#2456a6','#5f4ea3','#d0648f','#a07800','#1a7f5a','#c0392b','#2456a6','#5f4ea3','#d0648f','#a07800'];
+
+// Chart.js defaults using the design system palette
+const CHART_DEFAULTS = {
+  plugins: {
+    legend: { labels: { color:'#1c2a5e', font:{ family:"'Space Mono', monospace", size:10 }, boxWidth:10 } },
+    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es')}` },
+      backgroundColor:'#1c2a5e', titleColor:'#e8e337', bodyColor:'#dbe6f8',
+      borderColor:'#2456a6', borderWidth:1, padding:10,
+      titleFont:{ family:"'Archivo Black', sans-serif" },
+      bodyFont:{ family:"'Space Mono', monospace", size:11 }
+    }
+  },
+  scales: {
+    x: { ticks:{ color:'#8d96b8', font:{ family:"'Space Mono', monospace", size:9 }, maxRotation:45 }, grid:{ color:'#dbe6f8' } },
+    y: { ticks:{ color:'#8d96b8', font:{ family:"'Space Mono', monospace", size:9 } }, grid:{ color:'#dbe6f8' } }
+  }
+};
 
 let tokenClient, accessToken = null;
 let allData = [], merkazList = [], activeM = new Set();
@@ -223,7 +473,7 @@ window.onload = () => {
   }
 
   document.getElementById('btn-glogin').onclick = () => tokenClient.requestAccessToken();
-  document.getElementById('btn-logout').onclick = logout;
+  document.getElementById('btn-logout').onclick  = logout;
   document.querySelectorAll('.cat-tab').forEach(btn => btn.onclick = () => {
     activeCat = btn.dataset.cat;
     document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b === btn));
@@ -244,7 +494,7 @@ function logout() {
 }
 
 async function loadData() {
-  showLoading('Cargando datos…');
+  showLoading();
   try {
     const range = encodeURIComponent(`${SHEET_NAME}!A:G`);
     const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`, {
@@ -299,7 +549,6 @@ function initApp() {
   const sel = document.getElementById('sel-year');
   sel.innerHTML = '<option value="all">Todos los años</option>';
   years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
-  sel.value = 'all';
 
   merkazList = [...new Set(allData.map(r => r.merkaz))].sort();
   activeM = new Set(merkazList);
@@ -328,15 +577,18 @@ function buildPills() {
   const c = document.getElementById('pills'); c.innerHTML = '';
   merkazList.forEach((m, i) => {
     const on = activeM.has(m);
+    const col = COLORS[i % COLORS.length];
     const p = document.createElement('span');
-    p.className = 'mpill' + (on ? '' : ' off');
+    p.className = 'mpill ' + (on ? 'on' : 'off');
     p.textContent = m;
-    p.style.borderColor = COLORS[i % COLORS.length];
-    p.style.color = COLORS[i % COLORS.length];
-    p.style.background = on ? COLORS[i % COLORS.length] + '18' : 'transparent';
+    p.style.borderColor = col;
+    p.style.color = on ? '#fff' : col;
+    p.style.background = on ? col : 'transparent';
     p.onclick = () => {
       const isSolo = activeM.size === 1 && activeM.has(m);
-      activeM = isSolo ? new Set(merkazList.filter(x => activeCat==='all' || merkCat[x]===activeCat)) : new Set([m]);
+      activeM = isSolo
+        ? new Set(merkazList.filter(x => activeCat === 'all' || merkCat[x] === activeCat))
+        : new Set([m]);
       buildPills(); render();
     };
     c.appendChild(p);
@@ -345,55 +597,68 @@ function buildPills() {
 
 function renderKPIs(data) {
   const total = data.reduce((s,r) => s+r.cantidad, 0);
-  const byDate = {}; data.forEach(r => { const k=r.dateObj.toISOString().slice(0,10); byDate[k]=(byDate[k]||0)+r.cantidad; });
+  const byDate = {};
+  data.forEach(r => { const k = r.dateObj.toISOString().slice(0,10); byDate[k] = (byDate[k]||0) + r.cantidad; });
   const sortedD = Object.keys(byDate).sort();
   const avg = sortedD.length ? Math.round(total / sortedD.length) : 0;
-  const maxDate = sortedD.reduce((a,b) => byDate[a]>=byDate[b]?a:b, sortedD[0]||'');
-  const maxVal = maxDate ? byDate[maxDate] : 0;
+  const maxDate = sortedD.reduce((a,b) => byDate[a] >= byDate[b] ? a : b, sortedD[0]||'');
+  const maxVal  = maxDate ? byDate[maxDate] : 0;
   const maxLabel = maxDate ? maxDate.split('-').reverse().join('/') : '';
-  const lastN = sortedD.slice(-4), prevN = sortedD.slice(-8,-4);
-  const sumL = lastN.reduce((s,d)=>s+(byDate[d]||0),0);
-  const sumP = prevN.reduce((s,d)=>s+(byDate[d]||0),0);
-  const delta = sumP > 0 ? Math.round((sumL-sumP)/sumP*100) : 0;
-  document.getElementById('kpis').innerHTML = `
   const lastDate = sortedD[sortedD.length - 1] || '';
   const lastVal  = lastDate ? byDate[lastDate] : 0;
   const lastLabel = lastDate ? lastDate.split('-').reverse().join('/') : '—';
+  const lastN = sortedD.slice(-4), prevN = sortedD.slice(-8,-4);
+  const sumL = lastN.reduce((s,d) => s+(byDate[d]||0), 0);
+  const sumP = prevN.reduce((s,d) => s+(byDate[d]||0), 0);
+  const delta = sumP > 0 ? Math.round((sumL-sumP)/sumP*100) : 0;
+
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Último sábado</div><div class="kpi-value" style="color:#60a5fa">${lastVal.toLocaleString('es')}</div><div class="kpi-sub">${lastLabel}</div></div>
-    <div class="kpi"><div class="kpi-label">Promedio por sábado</div><div class="kpi-value">${avg.toLocaleString('es')}</div><div class="kpi-delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs. 4 sáb. atrás</div></div>
-    <div class="kpi"><div class="kpi-label">Mejor sábado</div><div class="kpi-value">${maxVal.toLocaleString('es')}</div><div class="kpi-sub">${maxLabel}</div></div>
-    <div class="kpi"><div class="kpi-label">Merkazim activos</div><div class="kpi-value">${activeM.size}</div><div class="kpi-sub">de ${merkazList.length} históricos</div></div>`;
+    <div class="hl-stat">
+      <div class="hl-stat__label">Último sábado</div>
+      <div class="hl-stat__value highlight">${lastVal.toLocaleString('es')}</div>
+      <div class="hl-stat__meta">${lastLabel}</div>
+    </div>
+    <div class="hl-stat">
+      <div class="hl-stat__label">Promedio por sábado</div>
+      <div class="hl-stat__value">${avg.toLocaleString('es')}</div>
+      <div class="hl-stat__delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs 4 sáb. atrás</div>
+    </div>
+    <div class="hl-stat">
+      <div class="hl-stat__label">Mejor sábado</div>
+      <div class="hl-stat__value">${maxVal.toLocaleString('es')}</div>
+      <div class="hl-stat__meta">${maxLabel}</div>
+    </div>
+    <div class="hl-stat">
+      <div class="hl-stat__label">Merkazim activos</div>
+      <div class="hl-stat__value">${activeM.size}</div>
+      <div class="hl-stat__meta">de ${merkazList.length} históricos</div>
+    </div>`;
 }
 
 function renderMonthly(data) {
   if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; }
   const byM = {};
-  data.forEach(r => { const k=`${r.anio}-${String(r.mes).padStart(2,'0')}`; byM[k]=(byM[k]||0)+r.cantidad; });
+  data.forEach(r => { const k = `${r.anio}-${String(r.mes).padStart(2,'0')}`; byM[k] = (byM[k]||0) + r.cantidad; });
   const sorted = Object.keys(byM).sort();
-  const vals = sorted.map(k => byM[k]);
   chartMonthly = new Chart(document.getElementById('chart-monthly'), {
     type: 'bar',
     data: {
       labels: sorted.map(k => { const [y,m]=k.split('-'); return `${MONTHS[parseInt(m)-1]} ${y.slice(2)}`; }),
-      datasets: [{ label:'Asistentes', data:vals, backgroundColor:'#3b82f630', borderColor:'#3b82f6', borderWidth:1.5, borderRadius:3 }]
+      datasets: [{
+        label: 'Asistentes',
+        data: sorted.map(k => byM[k]),
+        backgroundColor: '#2456a630',
+        borderColor: '#2456a6',
+        borderWidth: 2,
+        borderRadius: 6
+      }]
     },
-    options: {
-      plugins: {
-        legend: { display:false },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.raw.toLocaleString('es')} asistentes` } }
-      },
-      scales: {
-        x: { ticks:{color:'#475569',maxRotation:45,font:{size:10}}, grid:{color:'#1e2a3a'} },
-        y: { ticks:{color:'#475569',font:{size:10}}, grid:{color:'#1e3a5f33'} }
-      }
-    }
+    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } } }
   });
 }
 
 function renderAnnual(data) {
   if (chartAnnual) { chartAnnual.destroy(); chartAnnual = null; }
-  // compute week-of-year from dateObj
   function weekOfYear(d) {
     const start = new Date(d.getFullYear(), 0, 1);
     return Math.ceil(((d - start) / 86400000 + start.getDay() + 1) / 7);
@@ -405,9 +670,9 @@ function renderAnnual(data) {
     byYW[r.anio][w] = (byYW[r.anio][w] || 0) + r.cantidad;
   });
   const years = Object.keys(byYW).map(Number).sort();
-  const allWeeks = [...new Set(data.map(r => weekOfYear(r.dateObj)))].sort((a,b)=>a-b);
+  const allWeeks = [...new Set(data.map(r => weekOfYear(r.dateObj)))].sort((a,b) => a-b);
   const maxY = Math.max(...years);
-  const palette = ['#334155','#475569','#64748b','#93c5fd','#60a5fa','#3b82f6'];
+  const yearPalette = ['#dbe6f8','#8d96b8','#5f4ea3','#2456a6'];
   chartAnnual = new Chart(document.getElementById('chart-annual'), {
     type: 'line',
     data: {
@@ -415,24 +680,15 @@ function renderAnnual(data) {
       datasets: years.map((y, i) => ({
         label: String(y),
         data: allWeeks.map(w => byYW[y]?.[w] ?? null),
-        borderColor: y === maxY ? '#60a5fa' : palette[i % palette.length],
+        borderColor: y === maxY ? '#1c2a5e' : yearPalette[i % yearPalette.length],
         backgroundColor: 'transparent',
-        borderWidth: y === maxY ? 2.5 : 1,
-        pointRadius: y === maxY ? 2 : 0,
+        borderWidth: y === maxY ? 3 : 1.5,
+        pointRadius: y === maxY ? 3 : 0,
         pointHoverRadius: 5,
         spanGaps: false, tension: 0.3
       }))
     },
-    options: {
-      plugins: {
-        legend: { labels: { color:'#94a3b8', boxWidth:10, font:{size:11} } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es')}` } }
-      },
-      scales: {
-        x: { ticks:{color:'#475569',maxRotation:45,font:{size:10}}, grid:{color:'#1e2a3a'} },
-        y: { ticks:{color:'#475569',font:{size:10}}, grid:{color:'#1e3a5f33'} }
-      }
-    }
+    options: CHART_DEFAULTS
   });
 }
 
@@ -442,15 +698,19 @@ function renderHealth(filteredData) {
   const last8dates = datesInPeriod.slice(-8);
 
   const byMDate = {};
-  allData.forEach(r => { if(!byMDate[r.merkaz]) byMDate[r.merkaz]={}; const k=r.dateObj.toISOString().slice(0,10); byMDate[r.merkaz][k]=(byMDate[r.merkaz][k]||0)+r.cantidad; });
+  allData.forEach(r => {
+    if (!byMDate[r.merkaz]) byMDate[r.merkaz] = {};
+    const k = r.dateObj.toISOString().slice(0,10);
+    byMDate[r.merkaz][k] = (byMDate[r.merkaz][k] || 0) + r.cantidad;
+  });
   const histMaxM = {};
-  allData.filter(r=>r.cantidad>0).forEach(r => { histMaxM[r.merkaz]=Math.max(histMaxM[r.merkaz]||0,r.cantidad); });
+  allData.filter(r => r.cantidad > 0).forEach(r => { histMaxM[r.merkaz] = Math.max(histMaxM[r.merkaz]||0, r.cantidad); });
 
   const health = {};
   merkazList.filter(m => activeM.has(m) && activeMInPeriod.has(m)).forEach(m => {
     const vals = last8dates.map(d => byMDate[m]?.[d] ?? 0);
-    const avg8 = Math.round(vals.reduce((s,v)=>s+v,0)/8);
-    const showed = vals.filter(v=>v>0).length;
+    const avg8   = Math.round(vals.reduce((s,v) => s+v, 0) / 8);
+    const showed = vals.filter(v => v > 0).length;
     const histMax = histMaxM[m] || 1;
     health[m] = { avg8, histMax, showed, pct: Math.round(avg8/histMax*100) };
   });
@@ -459,12 +719,15 @@ function renderHealth(filteredData) {
   const grid = document.getElementById('health-grid'); grid.innerHTML = '';
   ms.forEach(m => {
     const {avg8, histMax, pct, showed} = health[m];
-    const cls = pct>=65?'green':pct>=40?'yellow':'red';
-    const col = pct>=65?'var(--green)':pct>=40?'var(--yellow)':'var(--red)';
+    const cls = pct >= 65 ? 'verde' : pct >= 40 ? 'amarillo' : 'rojo';
+    const fillCol = pct >= 65 ? '#1a7f5a' : pct >= 40 ? '#e8c100' : '#c0392b';
     grid.innerHTML += `<div class="health-item">
-      <div class="h-top"><span class="h-name">${m}</span><span class="h-pct ${cls}">${pct}%</span></div>
-      <div class="h-bar-bg"><div class="h-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-      <div class="h-detail">${avg8} prom. · ${showed}/8 sáb. · máx. ${histMax}</div>
+      <div class="h-top">
+        <span class="h-name">${m}</span>
+        <span class="h-pct ${cls}">${pct}%</span>
+      </div>
+      <div class="h-bar-bg"><div class="h-bar-fill" style="width:${pct}%;background:${fillCol}"></div></div>
+      <div class="h-detail">${avg8} PROM · ${showed}/8 SÁB · MÁX ${histMax}</div>
     </div>`;
   });
 }
@@ -472,29 +735,32 @@ function renderHealth(filteredData) {
 function renderTable() {
   const now = new Date();
   const byM = {};
-  allData.filter(r => r.cantidad > 0).forEach(r => { if(!byM[r.merkaz]) byM[r.merkaz]=[]; byM[r.merkaz].push({date:r.dateObj,qty:r.cantidad,fecha:r.fecha}); });
+  allData.filter(r => r.cantidad > 0).forEach(r => {
+    if (!byM[r.merkaz]) byM[r.merkaz] = [];
+    byM[r.merkaz].push({ date: r.dateObj, qty: r.cantidad, fecha: r.fecha });
+  });
 
   const rows = [];
   merkazList.filter(m => activeM.has(m)).forEach(m => {
-    const sessions = (byM[m]||[]).sort((a,b)=>a.date-b.date);
+    const sessions = (byM[m]||[]).sort((a,b) => a.date - b.date);
     if (!sessions.length) return;
     const last = sessions[sessions.length-1];
-    const histAvg = Math.round(sessions.reduce((s,x)=>s+x.qty,0)/sessions.length);
-    const histMax = Math.max(...sessions.map(s=>s.qty));
+    const histAvg = Math.round(sessions.reduce((s,x) => s+x.qty, 0) / sessions.length);
+    const histMax = Math.max(...sessions.map(s => s.qty));
     const daysSince = Math.round((now - last.date) / 86400000);
-    const status = daysSince <= 14 ? 'green' : daysSince <= 60 ? 'yellow' : 'red';
+    const status = daysSince <= 14 ? 'verde' : daysSince <= 60 ? 'amarillo' : 'rojo';
     const statusLabel = daysSince <= 14 ? 'Activo' : daysSince <= 60 ? 'Pausa' : 'Inactivo';
-    rows.push({ m, cat:merkCat[m]||'chico', fecha:last.fecha, lastQty:last.qty, histAvg, histMax, total:sessions.length, status, statusLabel });
+    rows.push({ m, cat: merkCat[m]||'chico', fecha: last.fecha, lastQty: last.qty, histAvg, histMax, total: sessions.length, status, statusLabel });
   });
   rows.sort((a,b) => new Date(b.fecha.split('/').reverse().join('-')) - new Date(a.fecha.split('/').reverse().join('-')));
 
-  const col = { green:'#10b981', yellow:'#f59e0b', red:'#ef4444' };
+  const dotCol = { verde:'#1a7f5a', amarillo:'#e8c100', rojo:'#c0392b' };
   document.getElementById('tbl-body').innerHTML = rows.map(r => `
     <tr>
       <td><strong>${r.m}</strong></td>
-      <td><span class="tc ${r.cat}">${r.cat}</span></td>
-      <td><span class="status-dot" style="background:${col[r.status]}"></span>${r.statusLabel}</td>
-      <td>${r.fecha}</td>
+      <td><span class="hl-badge hl-badge--${r.cat}">${r.cat}</span></td>
+      <td><span class="status-dot" style="background:${dotCol[r.status]}"></span>${r.statusLabel}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">${r.fecha}</td>
       <td class="tn">${r.lastQty}</td>
       <td class="tn">${r.histAvg}</td>
       <td class="tn">${r.histMax}</td>
@@ -511,15 +777,14 @@ function render() {
   renderTable();
 }
 
-function showLoading(msg) {
+function showLoading() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
   document.getElementById('loading').style.display = 'flex';
-  document.getElementById('loading').innerHTML = `<div class="spinner"></div><p>${msg}</p>`;
 }
 function showError(msg) {
   document.getElementById('loading').style.display = 'flex';
-  document.getElementById('loading').innerHTML = `<p class="error-box">⚠️ ${msg}</p>`;
+  document.getElementById('loading').innerHTML = `<p class="error-box">✳ ${msg}</p>`;
 }
 </script>
 </body>
