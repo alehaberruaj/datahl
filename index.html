@@ -554,6 +554,15 @@ function initApp() {
   activeM = new Set(merkazList);
   buildPills();
 
+  // default to current year if available, otherwise most recent
+  const currentYear = new Date().getFullYear();
+  const sel2 = document.getElementById('sel-year');
+  if ([...sel2.options].some(o => parseInt(o.value) === currentYear)) {
+    sel2.value = currentYear;
+  } else if (years.length) {
+    sel2.value = years[years.length - 1];
+  }
+
   document.getElementById('loading').style.display = 'none';
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
