@@ -351,8 +351,8 @@
     <div class="hl-panel">
       <div class="hl-panel__head">
         <div>
-          <div class="hl-panel__title">Asistencia mensual</div>
-          <div class="hl-panel__sub">Total de asistentes por mes en el período seleccionado.</div>
+          <div class="hl-panel__title">Asistencia semanal</div>
+          <div class="hl-panel__sub">Total de asistentes por sábado en el período seleccionado.</div>
         </div>
       </div>
       <div class="hl-panel__body">
@@ -388,7 +388,7 @@
       <div class="hl-panel__head">
         <div>
           <div class="hl-panel__title">Resumen por merkaz</div>
-          <div class="hl-panel__sub">El punto indica actividad: verde = activo (≤14 días) · amarillo = pausa (≤60 días) · rojo = inactivo.</div>
+          <div class="hl-panel__sub">El punto indica actividad: verde = activo (≤30 días) · amarillo = pausa (≤90 días) · rojo = inactivo.</div>
         </div>
       </div>
       <div class="hl-panel__body" style="padding:0">
@@ -637,20 +637,24 @@ function renderKPIs(data) {
 
 function renderMonthly(data) {
   if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; }
-  const byM = {};
-  data.forEach(r => { const k = `${r.anio}-${String(r.mes).padStart(2,'0')}`; byM[k] = (byM[k]||0) + r.cantidad; });
-  const sorted = Object.keys(byM).sort();
+  // group by date (each Saturday)
+  const byDate = {};
+  data.forEach(r => {
+    const k = r.dateObj.toISOString().slice(0,10);
+    byDate[k] = (byDate[k] || 0) + r.cantidad;
+  });
+  const sorted = Object.keys(byDate).sort();
   chartMonthly = new Chart(document.getElementById('chart-monthly'), {
     type: 'bar',
     data: {
-      labels: sorted.map(k => { const [y,m]=k.split('-'); return `${MONTHS[parseInt(m)-1]} ${y.slice(2)}`; }),
+      labels: sorted.map(k => { const [y,m,d]=k.split('-'); return `${d}/${m}/${y.slice(2)}`; }),
       datasets: [{
         label: 'Asistentes',
-        data: sorted.map(k => byM[k]),
+        data: sorted.map(k => byDate[k]),
         backgroundColor: '#2456a630',
         borderColor: '#2456a6',
         borderWidth: 2,
-        borderRadius: 6
+        borderRadius: 4
       }]
     },
     options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } } }
@@ -672,7 +676,7 @@ function renderAnnual(data) {
   const years = Object.keys(byYW).map(Number).sort();
   const allWeeks = [...new Set(data.map(r => weekOfYear(r.dateObj)))].sort((a,b) => a-b);
   const maxY = Math.max(...years);
-  const yearPalette = ['#dbe6f8','#8d96b8','#5f4ea3','#2456a6'];
+  const yearPalette = ['#dbe6f8','#8d96b8','#5f4ea3','#2456a6','#d0648f','#a07800'];
   chartAnnual = new Chart(document.getElementById('chart-annual'), {
     type: 'line',
     data: {
@@ -685,7 +689,8 @@ function renderAnnual(data) {
         borderWidth: y === maxY ? 3 : 1.5,
         pointRadius: y === maxY ? 3 : 0,
         pointHoverRadius: 5,
-        spanGaps: false, tension: 0.3
+        spanGaps: false, tension: 0.3,
+        hidden: y !== maxY   // only current year visible by default
       }))
     },
     options: CHART_DEFAULTS
@@ -748,8 +753,8 @@ function renderTable() {
     const histAvg = Math.round(sessions.reduce((s,x) => s+x.qty, 0) / sessions.length);
     const histMax = Math.max(...sessions.map(s => s.qty));
     const daysSince = Math.round((now - last.date) / 86400000);
-    const status = daysSince <= 14 ? 'verde' : daysSince <= 60 ? 'amarillo' : 'rojo';
-    const statusLabel = daysSince <= 14 ? 'Activo' : daysSince <= 60 ? 'Pausa' : 'Inactivo';
+    const status = daysSince <= 30 ? 'verde' : daysSince <= 90 ? 'amarillo' : 'rojo';
+    const statusLabel = daysSince <= 30 ? 'Activo' : daysSince <= 90 ? 'Pausa' : 'Inactivo';
     rows.push({ m, cat: merkCat[m]||'chico', fecha: last.fecha, lastQty: last.qty, histAvg, histMax, total: sessions.length, status, statusLabel });
   });
   rows.sort((a,b) => new Date(b.fecha.split('/').reverse().join('-')) - new Date(a.fecha.split('/').reverse().join('-')));
