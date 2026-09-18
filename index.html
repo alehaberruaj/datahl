@@ -399,9 +399,10 @@
                 <th>Merkaz</th><th>Cat.</th><th>Estado</th>
                 <th>Última peulá</th>
                 <th class="tn">Últ. asist.</th>
+                <th class="tn">Peulot período</th>
                 <th class="tn">Prom. hist.</th>
                 <th class="tn">Máx. hist.</th>
-                <th class="tn">Peulot</th>
+                <th class="tn">Peulot total</th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
@@ -759,6 +760,16 @@ function renderHealth(filteredData) {
 
 function renderTable() {
   const now = new Date();
+  const filtered = getFiltered();
+
+  // sessions in the filtered period per merkaz
+  const byMFiltered = {};
+  filtered.forEach(r => {
+    if (!byMFiltered[r.merkaz]) byMFiltered[r.merkaz] = new Set();
+    byMFiltered[r.merkaz].add(r.dateObj.toISOString().slice(0,10));
+  });
+
+  // all-time sessions per merkaz
   const byM = {};
   allData.filter(r => r.cantidad > 0).forEach(r => {
     if (!byM[r.merkaz]) byM[r.merkaz] = [];
@@ -775,7 +786,8 @@ function renderTable() {
     const daysSince = Math.round((now - last.date) / 86400000);
     const status = daysSince <= 30 ? 'verde' : daysSince <= 90 ? 'amarillo' : 'rojo';
     const statusLabel = daysSince <= 30 ? 'Activo' : daysSince <= 90 ? 'Pausa' : 'Inactivo';
-    rows.push({ m, cat: merkCat[m]||'chico', fecha: last.fecha, lastQty: last.qty, histAvg, histMax, total: sessions.length, status, statusLabel });
+    const peulotPeriod = byMFiltered[m]?.size ?? 0;
+    rows.push({ m, cat: merkCat[m]||'chico', fecha: last.fecha, lastQty: last.qty, peulotPeriod, histAvg, histMax, total: sessions.length, status, statusLabel });
   });
   rows.sort((a,b) => new Date(b.fecha.split('/').reverse().join('-')) - new Date(a.fecha.split('/').reverse().join('-')));
 
@@ -787,6 +799,7 @@ function renderTable() {
       <td><span class="status-dot" style="background:${dotCol[r.status]}"></span>${r.statusLabel}</td>
       <td style="font-family:'Space Mono',monospace;font-size:12px">${r.fecha}</td>
       <td class="tn">${r.lastQty}</td>
+      <td class="tn">${r.peulotPeriod}</td>
       <td class="tn">${r.histAvg}</td>
       <td class="tn">${r.histMax}</td>
       <td class="tn">${r.total}</td>
