@@ -635,22 +635,33 @@ function renderKPIs(data) {
     </div>`;
 }
 
+function isoWeek(d) {
+  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+  return { week: Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7), year: tmp.getUTCFullYear() };
+}
+
 function renderMonthly(data) {
   if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; }
-  // group by date (each Saturday)
-  const byDate = {};
+  // group by ISO week
+  const byWeek = {};
   data.forEach(r => {
-    const k = r.dateObj.toISOString().slice(0,10);
-    byDate[k] = (byDate[k] || 0) + r.cantidad;
+    const { week, year } = isoWeek(r.dateObj);
+    const k = `${year}-${String(week).padStart(2,'0')}`;
+    byWeek[k] = (byWeek[k] || 0) + r.cantidad;
   });
-  const sorted = Object.keys(byDate).sort();
+  const sorted = Object.keys(byWeek).sort();
   chartMonthly = new Chart(document.getElementById('chart-monthly'), {
     type: 'bar',
     data: {
-      labels: sorted.map(k => { const [y,m,d]=k.split('-'); return `${d}/${m}/${y.slice(2)}`; }),
+      labels: sorted.map(k => {
+        const [y, w] = k.split('-');
+        return `Sem ${parseInt(w)} · ${y.slice(2)}`;
+      }),
       datasets: [{
         label: 'Asistentes',
-        data: sorted.map(k => byDate[k]),
+        data: sorted.map(k => byWeek[k]),
         backgroundColor: '#2456a630',
         borderColor: '#2456a6',
         borderWidth: 2,
