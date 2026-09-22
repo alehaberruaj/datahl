@@ -432,7 +432,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v21</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v22</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -503,9 +503,14 @@
 
     <div class="hl-panel">
       <div class="hl-panel__head">
-        <div>
+        <div style="flex:1">
           <div class="hl-panel__title">Comparación por año</div>
-          <div class="hl-panel__sub">Asistencia por semana del año — una línea por año para comparar el mismo período.</div>
+          <div class="hl-panel__sub">Asistencia por semana — compará dos años puntales.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <select id="annual-year-a" style="font-family:var(--hl-f-mono);font-size:11px;background:#fff;border:2px solid var(--hl-border);color:var(--hl-ink);padding:5px 8px;border-radius:var(--hl-r-field);outline:none"></select>
+          <span style="font-family:var(--hl-f-mono);font-size:10px;color:var(--hl-muted)">vs</span>
+          <select id="annual-year-b" style="font-family:var(--hl-f-mono);font-size:11px;background:#fff;border:2px solid var(--hl-border);color:var(--hl-ink);padding:5px 8px;border-radius:var(--hl-r-field);outline:none"></select>
         </div>
       </div>
       <div class="hl-panel__body">
@@ -746,6 +751,10 @@ function computeCategories() {
 }
 
 function initApp() {
+  // reset annual comparison selectors so renderAnnual repopulates them
+  document.getElementById('annual-year-a').innerHTML = '';
+  document.getElementById('annual-year-b').innerHTML = '';
+
   const years = [...new Set(allData.map(r => r.anio))].filter(Boolean).sort();
   const sel = document.getElementById('sel-year');
   sel.innerHTML = '<option value="all">Todos los años</option>';
@@ -983,36 +992,56 @@ function renderMonthly(data) {
   });
 }
 
-function renderAnnual(data) {
+function renderAnnual() {
   if (chartAnnual) { chartAnnual.destroy(); chartAnnual = null; }
+
+  // use allData filtered only by active merkazim (ignores year filter)
+  const base = allData.filter(r => activeM.has(r.merkaz) && r.cantidad > 0);
+
+  // populate selectors on first call
+  const allYears = [...new Set(base.map(r => r.anio))].sort((a,b) => a-b);
+  const selA = document.getElementById('annual-year-a');
+  const selB = document.getElementById('annual-year-b');
+  if (!selA.options.length) {
+    allYears.forEach(y => {
+      selA.add(new Option(y, y));
+      selB.add(new Option(y, y));
+    });
+    const curY = new Date().getFullYear();
+    selA.value = allYears.includes(curY) ? curY : allYears.at(-1);
+    selB.value = allYears.includes(curY - 1) ? curY - 1 : allYears.at(-2) ?? allYears.at(-1);
+    selA.onchange = selB.onchange = renderAnnual;
+  }
+
+  const yA = +selA.value, yB = +selB.value;
+  const colors = { [yA]: '#1c2a5e', [yB]: '#d0648f' };
+  const widths = { [yA]: 3, [yB]: 2 };
+
   function weekOfYear(d) {
     const start = new Date(d.getFullYear(), 0, 1);
     return Math.ceil(((d - start) / 86400000 + start.getDay() + 1) / 7);
   }
   const byYW = {};
-  data.forEach(r => {
+  base.forEach(r => {
+    if (r.anio !== yA && r.anio !== yB) return;
     const w = weekOfYear(r.dateObj);
     if (!byYW[r.anio]) byYW[r.anio] = {};
     byYW[r.anio][w] = (byYW[r.anio][w] || 0) + r.cantidad;
   });
-  const years = Object.keys(byYW).map(Number).sort();
-  const allWeeks = [...new Set(data.map(r => weekOfYear(r.dateObj)))].sort((a,b) => a-b);
-  const maxY = Math.max(...years);
-  const yearPalette = ['#dbe6f8','#8d96b8','#5f4ea3','#2456a6','#d0648f','#a07800'];
+  const weeks = [...new Set([yA, yB].flatMap(y => Object.keys(byYW[y]||{}).map(Number)))].sort((a,b)=>a-b);
+
   chartAnnual = new Chart(document.getElementById('chart-annual'), {
     type: 'line',
     data: {
-      labels: allWeeks.map(w => `Sem ${w}`),
-      datasets: years.map((y, i) => ({
+      labels: weeks.map(w => `Sem ${w}`),
+      datasets: [yA, yB].filter((y,i,a) => a.indexOf(y)===i).map(y => ({
         label: String(y),
-        data: allWeeks.map(w => byYW[y]?.[w] ?? null),
-        borderColor: y === maxY ? '#1c2a5e' : yearPalette[i % yearPalette.length],
+        data: weeks.map(w => byYW[y]?.[w] ?? null),
+        borderColor: colors[y],
         backgroundColor: 'transparent',
-        borderWidth: y === maxY ? 3 : 1.5,
-        pointRadius: y === maxY ? 3 : 0,
-        pointHoverRadius: 5,
-        spanGaps: false, tension: 0.3,
-        hidden: y !== maxY && y !== maxY - 1
+        borderWidth: widths[y],
+        pointRadius: 3, pointHoverRadius: 5,
+        spanGaps: false, tension: 0.3
       }))
     },
     options: CHART_DEFAULTS
@@ -1234,7 +1263,7 @@ function render() {
   const data = getFiltered();
   renderKPIs(data);
   renderMonthly(data);
-  renderAnnual(data);
+  renderAnnual();
   renderShare(data);
   renderRegularity(data);
   renderHealth(data);
