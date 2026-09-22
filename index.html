@@ -302,70 +302,65 @@
     .hl-badge--chico   { background: #eceadf; color: var(--hl-muted); }
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; border: 1px solid var(--hl-ink); }
 
-    /* ── Merkaz modal ── */
-    .mk-overlay {
-      display: none; position: fixed; inset: 0; z-index: 100;
-      background: rgba(28,42,94,.55); backdrop-filter: blur(3px);
-      align-items: flex-end; justify-content: center;
+    /* ── Merkaz dashboard ── */
+    #mk-dash { display: none; }
+    .mk-topbar {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 32px; border-bottom: 3px solid var(--hl-ink);
+      background: var(--hl-ink); color: #fff;
     }
-    .mk-overlay.open { display: flex; }
-    .mk-sheet {
-      background: var(--hl-crema); border: 3px solid var(--hl-ink);
-      border-bottom: none; border-radius: 24px 24px 0 0;
-      width: 100%; max-width: 680px; max-height: 90vh;
-      overflow-y: auto; padding: 0 0 40px;
-      box-shadow: 0 -6px 0 var(--hl-ink);
-      animation: slideUp .22s ease;
+    .mk-back {
+      font-family: var(--hl-f-mono); font-size: 11px; font-weight: 700;
+      letter-spacing: .08em; color: var(--hl-accent);
+      background: none; border: 2px solid var(--hl-accent); border-radius: var(--hl-r-btn);
+      padding: 6px 14px; cursor: pointer;
+      transition: background .12s, color .12s;
     }
-    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .mk-handle {
-      display: flex; justify-content: center; padding: 12px 0 4px;
-      cursor: pointer;
+    .mk-back:hover { background: var(--hl-accent); color: var(--hl-ink); }
+    .mk-title {
+      font-family: var(--hl-f-black); font-size: 22px; color: #fff;
+      text-transform: uppercase; line-height: 1;
     }
-    .mk-handle::before {
-      content: ''; width: 40px; height: 4px;
-      background: var(--hl-ink); border-radius: 999px; opacity: .25;
+    .mk-title span { color: var(--hl-accent); }
+    .mk-hero {
+      padding: 32px 32px 0;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
     }
-    .mk-header {
-      padding: 16px 28px 20px;
-      border-bottom: 2px solid var(--hl-tint);
-      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    .mk-stat {
+      background: var(--hl-ink); border: 2px solid var(--hl-accent);
+      border-radius: 16px; padding: 20px;
+      box-shadow: 0 4px 0 var(--hl-accent);
     }
-    .mk-name {
-      font-family: var(--hl-f-black); font-size: 28px; color: var(--hl-ink);
-      line-height: 1; text-transform: uppercase;
+    .mk-stat__label { font-family: var(--hl-f-mono); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--hl-muted); }
+    .mk-stat__val { font-family: var(--hl-f-black); font-size: 36px; color: var(--hl-accent); line-height: 1; margin-top: 4px; }
+    .mk-stat__sub { font-family: var(--hl-f-mono); font-size: 10px; color: #8d96b8; margin-top: 2px; }
+    .mk-content { padding: 24px 32px 48px; display: flex; flex-direction: column; gap: 20px; }
+    .mk-panel {
+      background: #fff; border: 2px solid var(--hl-ink);
+      border-radius: var(--hl-r-card);
     }
-    .mk-meta { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
-    .mk-close {
-      background: none; border: 2px solid var(--hl-ink); border-radius: 50%;
-      width: 32px; height: 32px; font-size: 16px; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; color: var(--hl-ink);
+    .mk-panel__head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 24px; border-bottom: 2px solid var(--hl-tint);
     }
-    .mk-kpis {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 12px; padding: 20px 28px 0;
-    }
-    .mk-kpi {
-      background: #fff; border: 2px solid var(--hl-ink); border-radius: 14px;
-      padding: 14px 16px; box-shadow: 0 3px 0 var(--hl-ink);
-    }
-    .mk-kpi__label { font-family: var(--hl-f-mono); font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--hl-label); }
-    .mk-kpi__val { font-family: var(--hl-f-black); font-size: 26px; color: var(--hl-ink); line-height: 1; margin-top: 4px; }
-    .mk-kpi__sub { font-family: var(--hl-f-mono); font-size: 10px; color: var(--hl-muted); margin-top: 2px; }
-    .mk-section { padding: 20px 28px 0; }
-    .mk-section__title { font-family: var(--hl-f-black); font-size: 13px; text-transform: uppercase; color: var(--hl-ink); margin-bottom: 12px; }
-    .mk-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-    .mk-bar-label { font-family: var(--hl-f-mono); font-size: 10px; width: 36px; text-align: right; color: var(--hl-muted); flex-shrink: 0; }
-    .mk-bar-track { flex: 1; height: 18px; background: var(--hl-tint); border: 1.5px solid var(--hl-ink); border-radius: 4px; overflow: hidden; }
-    .mk-bar-fill { height: 100%; transition: width .4s; }
-    .mk-bar-val { font-family: var(--hl-f-mono); font-size: 10px; font-weight: 700; width: 32px; color: var(--hl-ink); flex-shrink: 0; }
+    .mk-panel__accent { width: 8px; height: 28px; border-radius: 4px; }
+    .mk-panel__title { font-family: var(--hl-f-black); font-size: 14px; text-transform: uppercase; color: var(--hl-ink); }
+    .mk-panel__body { padding: 20px 24px; }
+    .mk-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .mk-bar-label { font-family: var(--hl-f-mono); font-size: 11px; width: 44px; text-align: right; color: var(--hl-muted); flex-shrink: 0; }
+    .mk-bar-track { flex: 1; height: 22px; background: var(--hl-tint); border: 2px solid var(--hl-ink); border-radius: 6px; overflow: hidden; }
+    .mk-bar-fill { height: 100%; transition: width .5s cubic-bezier(.4,0,.2,1); }
+    .mk-bar-val { font-family: var(--hl-f-mono); font-size: 11px; font-weight: 700; width: 36px; color: var(--hl-ink); flex-shrink: 0; }
     @media (max-width: 640px) {
-      .mk-sheet { max-height: 95vh; }
-      .mk-name { font-size: 22px; }
-      .mk-kpis { grid-template-columns: repeat(2, 1fr); }
-      .mk-header { padding: 12px 16px 16px; }
-      .mk-section { padding: 16px 16px 0; }
-      .mk-kpis { padding: 16px 16px 0; }
+      .mk-topbar { padding: 10px 14px; gap: 10px; }
+      .mk-title { font-size: 16px; }
+      .mk-hero { grid-template-columns: 1fr 1fr; padding: 16px 12px 0; gap: 10px; }
+      .mk-stat { padding: 14px; }
+      .mk-stat__val { font-size: 28px; }
+      .mk-content { padding: 16px 12px 40px; gap: 14px; }
+      .mk-panel__head { padding: 12px 16px; }
+      .mk-panel__body { padding: 14px 16px; }
     }
 
     /* ── Footer ── */
@@ -437,7 +432,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v16</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v17</span></div>
     <div class="hl-topbar__sub">ASISTENCIA ✳ MERKAZIM</div>
   </div>
   <div class="hl-topbar__right">
@@ -586,25 +581,39 @@
 
 </div>
 
-<!-- Merkaz modal -->
-<div class="mk-overlay" id="mk-overlay">
-  <div class="mk-sheet" id="mk-sheet">
-    <div class="mk-handle" id="mk-close-handle"></div>
-    <div class="mk-header">
-      <div>
-        <div class="mk-name" id="mk-name">—</div>
-        <div class="mk-meta" id="mk-meta"></div>
+<!-- Merkaz dashboard -->
+<div id="mk-dash">
+  <header class="mk-topbar">
+    <button class="mk-back" id="mk-back">← VOLVER</button>
+    <div>
+      <div class="mk-title" id="mk-dash-title">—</div>
+      <div id="mk-dash-meta" style="margin-top:4px;display:flex;gap:8px;align-items:center"></div>
+    </div>
+  </header>
+  <div class="mk-hero" id="mk-hero"></div>
+  <div class="mk-content">
+    <div class="mk-panel">
+      <div class="mk-panel__head">
+        <div class="mk-panel__accent" id="mk-accent1"></div>
+        <div class="mk-panel__title">Asistencia por año</div>
       </div>
-      <button class="mk-close" id="mk-close">✕</button>
+      <div class="mk-panel__body" id="mk-yearly"></div>
     </div>
-    <div class="mk-kpis" id="mk-kpis"></div>
-    <div class="mk-section">
-      <div class="mk-section__title">Asistencia por año</div>
-      <div id="mk-yearly"></div>
+    <div class="mk-panel">
+      <div class="mk-panel__head">
+        <div class="mk-panel__accent" id="mk-accent2"></div>
+        <div class="mk-panel__title">Últimas 16 peulot</div>
+      </div>
+      <div class="mk-panel__body" id="mk-last16"></div>
     </div>
-    <div class="mk-section">
-      <div class="mk-section__title">Últimas 12 peulot</div>
-      <div id="mk-last12"></div>
+    <div class="mk-panel">
+      <div class="mk-panel__head">
+        <div class="mk-panel__accent" id="mk-accent3"></div>
+        <div class="mk-panel__title">Asistencia semanal — todos los años</div>
+      </div>
+      <div class="mk-panel__body">
+        <canvas id="mk-chart-annual" style="max-height:280px"></canvas>
+      </div>
     </div>
   </div>
 </div>
@@ -1201,81 +1210,140 @@ function showLoading() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('loading').style.display = 'flex';
 }
+let mkAnnualChart = null;
+
 function openMerkaz(m) {
-  const overlay = document.getElementById('mk-overlay');
+  location.hash = 'merkaz=' + encodeURIComponent(m);
+}
+
+function renderMerkazDash(m) {
   const mData = allData.filter(r => r.merkaz === m && r.cantidad > 0);
   if (!mData.length) return;
 
-  // header
-  document.getElementById('mk-name').textContent = m;
   const col = COLORS[merkazList.indexOf(m) % COLORS.length];
   const cat = merkCat[m] || 'chico';
   const now = new Date();
-  const sessions = [...new Map(mData.map(r => [r.dateObj.toISOString().slice(0,10), r])).values()]
-    .sort((a,b) => a.dateObj - b.dateObj);
-  const lastDate = sessions.at(-1)?.dateObj;
-  const daysSince = lastDate ? Math.round((now - lastDate) / 86400000) : 9999;
-  const status = daysSince <= 30 ? 'Activo' : daysSince <= 90 ? 'Pausa' : 'Inactivo';
-  const statusCol = daysSince <= 30 ? '#1a7f5a' : daysSince <= 90 ? '#a07800' : '#c0392b';
-  document.getElementById('mk-meta').innerHTML = `
-    <span class="hl-badge hl-badge--${cat}">${cat}</span>
-    <span style="font-family:var(--hl-f-mono);font-size:11px;font-weight:700;color:${statusCol}">● ${status}</span>
-    <span style="font-family:var(--hl-f-mono);font-size:11px;color:var(--hl-muted)">${daysSince === 9999 ? '' : `hace ${daysSince}d`}</span>`;
-
-  // KPIs
-  const totals = mData.reduce((s,r) => s + r.cantidad, 0);
-  const byWeek = {};
+  const byWeekMap = {};
   mData.forEach(r => {
     const {week,year} = isoWeek(r.dateObj);
-    const k = `${year}-W${week}`;
-    byWeek[k] = (byWeek[k]||0) + r.cantidad;
+    const k = `${year}-${String(week).padStart(2,'0')}`;
+    if (!byWeekMap[k]) byWeekMap[k] = { total: 0, date: r.dateObj };
+    byWeekMap[k].total += r.cantidad;
+    if (r.dateObj < byWeekMap[k].date) byWeekMap[k].date = r.dateObj;
   });
-  const weekVals = Object.values(byWeek);
+  const sessions = Object.entries(byWeekMap).sort((a,b)=>a[0]>b[0]?1:-1);
+  const lastDate = sessions.at(-1)?.[1].date;
+  const daysSince = lastDate ? Math.round((now - lastDate) / 86400000) : 9999;
+  const status = daysSince <= 30 ? 'Activo' : daysSince <= 90 ? 'Pausa' : 'Inactivo';
+  const statusCol = daysSince <= 30 ? '#1a7f5a' : daysSince <= 90 ? '#e8c100' : '#c0392b';
+  const weekVals = sessions.map(s => s[1].total);
   const avg = weekVals.length ? Math.round(weekVals.reduce((a,b)=>a+b,0)/weekVals.length) : 0;
   const max = weekVals.length ? Math.max(...weekVals) : 0;
+  const total = mData.reduce((s,r)=>s+r.cantidad,0);
   const years = [...new Set(mData.map(r=>r.anio))];
-  document.getElementById('mk-kpis').innerHTML = `
-    <div class="mk-kpi"><div class="mk-kpi__label">Total peulot</div><div class="mk-kpi__val">${weekVals.length}</div><div class="mk-kpi__sub">${years.length} año${years.length>1?'s':''}</div></div>
-    <div class="mk-kpi"><div class="mk-kpi__label">Promedio</div><div class="mk-kpi__val">${avg}</div><div class="mk-kpi__sub">por peulá</div></div>
-    <div class="mk-kpi"><div class="mk-kpi__label">Mejor peulá</div><div class="mk-kpi__val">${max}</div><div class="mk-kpi__sub">máximo histórico</div></div>
-    <div class="mk-kpi"><div class="mk-kpi__label">Presencias</div><div class="mk-kpi__val">${totals.toLocaleString('es')}</div><div class="mk-kpi__sub">total histórico</div></div>`;
+
+  // header
+  document.getElementById('mk-dash-title').innerHTML = `<span style="color:${col}">${m}</span>`;
+  document.getElementById('mk-dash-meta').innerHTML = `
+    <span class="hl-badge hl-badge--${cat}" style="background:#ffffff22;border:1.5px solid ${col};color:${col}">${cat}</span>
+    <span style="font-family:var(--hl-f-mono);font-size:11px;font-weight:700;color:${statusCol}">● ${status}</span>
+    ${daysSince < 9999 ? `<span style="font-family:var(--hl-f-mono);font-size:11px;color:#8d96b8">última peulá hace ${daysSince}d</span>` : ''}`;
+
+  // KPIs
+  document.getElementById('mk-hero').innerHTML = [
+    ['Total peulot', weekVals.length, `${years.length} año${years.length>1?'s':''}`],
+    ['Promedio', avg, 'por peulá'],
+    ['Mejor peulá', max, 'máximo histórico'],
+    ['Presencias', total.toLocaleString('es'), 'total histórico'],
+  ].map(([l,v,s]) => `
+    <div class="mk-stat">
+      <div class="mk-stat__label">${l}</div>
+      <div class="mk-stat__val">${v}</div>
+      <div class="mk-stat__sub">${s}</div>
+    </div>`).join('');
+
+  // accents
+  ['mk-accent1','mk-accent2','mk-accent3'].forEach(id => document.getElementById(id).style.background = col);
 
   // Yearly bars
   const byYear = {};
   mData.forEach(r => { byYear[r.anio] = (byYear[r.anio]||0) + r.cantidad; });
-  const yearEntries = Object.entries(byYear).sort((a,b)=>a[0]-b[0]);
-  const yearMax = Math.max(...yearEntries.map(e=>e[1]));
+  const yearEntries = Object.entries(byYear).sort((a,b)=>+a[0]-+b[0]);
+  const yearMax = Math.max(...yearEntries.map(e=>+e[1]));
   document.getElementById('mk-yearly').innerHTML = yearEntries.map(([y,v]) => `
     <div class="mk-bar-row">
       <div class="mk-bar-label">${y}</div>
-      <div class="mk-bar-track"><div class="mk-bar-fill" style="width:${Math.round(v/yearMax*100)}%;background:${col}"></div></div>
-      <div class="mk-bar-val">${v.toLocaleString('es')}</div>
+      <div class="mk-bar-track"><div class="mk-bar-fill" style="width:${Math.round(+v/yearMax*100)}%;background:${col}"></div></div>
+      <div class="mk-bar-val">${(+v).toLocaleString('es')}</div>
     </div>`).join('');
 
-  // Last 12 peulot
-  const last12 = sessions.slice(-12).reverse();
-  const l12max = Math.max(...last12.map(r=>r.cantidad));
-  document.getElementById('mk-last12').innerHTML = last12.map(r => {
-    const d = r.dateObj;
+  // Last 16 peulot
+  const last16 = sessions.slice(-16).reverse();
+  const l16max = Math.max(...last16.map(s=>s[1].total));
+  document.getElementById('mk-last16').innerHTML = last16.map(([k, s]) => {
+    const d = s.date;
     const label = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
     return `
     <div class="mk-bar-row">
       <div class="mk-bar-label">${label}</div>
-      <div class="mk-bar-track"><div class="mk-bar-fill" style="width:${l12max>0?Math.round(r.cantidad/l12max*100):0}%;background:${col}"></div></div>
-      <div class="mk-bar-val">${r.cantidad}</div>
+      <div class="mk-bar-track"><div class="mk-bar-fill" style="width:${l16max>0?Math.round(s.total/l16max*100):0}%;background:${col}"></div></div>
+      <div class="mk-bar-val">${s.total}</div>
     </div>`;
   }).join('');
 
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Annual chart (line per year)
+  if (mkAnnualChart) { mkAnnualChart.destroy(); mkAnnualChart = null; }
+  const byYW = {};
+  mData.forEach(r => {
+    const {week} = isoWeek(r.dateObj);
+    if (!byYW[r.anio]) byYW[r.anio] = {};
+    byYW[r.anio][week] = (byYW[r.anio][week]||0) + r.cantidad;
+  });
+  const annualYears = Object.keys(byYW).map(Number).sort();
+  const allWeeks = [...new Set(mData.map(r=>isoWeek(r.dateObj).week))].sort((a,b)=>a-b);
+  const maxY = Math.max(...annualYears);
+  const palette = ['#dbe6f8','#8d96b8','#5f4ea3','#2456a6','#d0648f'];
+  mkAnnualChart = new Chart(document.getElementById('mk-chart-annual'), {
+    type: 'line',
+    data: {
+      labels: allWeeks.map(w => `Sem ${w}`),
+      datasets: annualYears.map((y,i) => ({
+        label: String(y),
+        data: allWeeks.map(w => byYW[y]?.[w] ?? null),
+        borderColor: y === maxY ? col : palette[i % palette.length],
+        backgroundColor: 'transparent',
+        borderWidth: y === maxY ? 3 : 1.5,
+        pointRadius: y === maxY ? 3 : 0,
+        spanGaps: false, tension: 0.3,
+        hidden: y !== maxY
+      }))
+    },
+    options: CHART_DEFAULTS
+  });
+
+  // show/hide
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('mk-dash').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+function closeMerkazDash() {
+  document.getElementById('mk-dash').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  if (mkAnnualChart) { mkAnnualChart.destroy(); mkAnnualChart = null; }
+  history.pushState('', document.title, location.pathname + location.search);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.getElementById('mk-overlay');
-  const close = () => { overlay.classList.remove('open'); document.body.style.overflow = ''; };
-  document.getElementById('mk-close').onclick = close;
-  document.getElementById('mk-close-handle').onclick = close;
-  overlay.onclick = e => { if (e.target === overlay) close(); };
+  document.getElementById('mk-back').onclick = closeMerkazDash;
+  window.addEventListener('hashchange', () => {
+    const hash = decodeURIComponent(location.hash.slice(1));
+    if (hash.startsWith('merkaz=') && allData.length) {
+      renderMerkazDash(hash.slice(7));
+    } else {
+      closeMerkazDash();
+    }
+  });
 });
 
 function showError(msg) {
