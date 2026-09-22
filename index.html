@@ -432,7 +432,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v18</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v19</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -473,7 +473,6 @@
       <button class="cat-tab" data-cat="chico">Chicos</button>
     </div>
     <div class="sep"></div>
-    <button id="btn-todos" class="cat-tab" style="flex-shrink:0">Todos</button>
     <div class="pill-bar" id="pills"></div>
     <div style="margin-left:auto">
       <button class="hl-btn" id="btn-refresh">↺ ACTUALIZAR</button>
@@ -508,17 +507,6 @@
       </div>
     </div>
 
-    <div class="hl-panel">
-      <div class="hl-panel__head">
-        <div>
-          <div class="hl-panel__title">Participación relativa</div>
-          <div class="hl-panel__sub">Qué % del total de asistentes aportó cada merkaz por mes. Muestra si el movimiento depende de pocos merkazim grandes.</div>
-        </div>
-      </div>
-      <div class="hl-panel__body">
-        <canvas id="chart-share"></canvas>
-      </div>
-    </div>
 
     <div class="hl-panel">
       <div class="hl-panel__head">
@@ -685,6 +673,7 @@ window.onload = () => {
     activeM = new Set(merkazList.filter(m => activeCat === 'all' || merkCat[m] === activeCat));
     buildPills(); render();
   });
+  // "Todos" cat-tab also resets pill selection
 };
 
 function logout() {
@@ -776,10 +765,6 @@ function initApp() {
   render();
   document.getElementById('sel-year').onchange = () => { buildPills(); render(); };
   document.getElementById('btn-refresh').onclick = loadData;
-  document.getElementById('btn-todos').onclick = () => {
-    activeM = new Set(merkazList.filter(m => activeCat === 'all' || merkCat[m] === activeCat));
-    buildPills(); render();
-  };
 
   document.querySelectorAll('.hl-table th[data-col]').forEach(th => {
     th.onclick = () => {
@@ -931,17 +916,32 @@ function renderMonthly(data) {
         const mm = String(d.getMonth()+1).padStart(2,'0');
         return [`Sem ${parseInt(w)}`, `${dd}/${mm}/${y.slice(2)}`];
       }),
-      datasets: ms.map(m => {
-        const col = COLORS[merkazList.indexOf(m) % COLORS.length];
-        return {
-          label: m,
-          data: sorted.map(k => byWeekMerkaz[m][k] || 0),
-          backgroundColor: col + 'cc',
-          borderColor: col,
-          borderWidth: 1,
-          stack: 'stacked'
-        };
-      })
+      datasets: [
+        ...ms.map(m => {
+          const col = COLORS[merkazList.indexOf(m) % COLORS.length];
+          return {
+            label: m,
+            data: sorted.map(k => byWeekMerkaz[m][k] || 0),
+            backgroundColor: col + 'cc',
+            borderColor: col,
+            borderWidth: 1,
+            stack: 'stacked',
+            type: 'bar'
+          };
+        }),
+        {
+          label: 'Total',
+          data: sorted.map(k => ms.reduce((s,m) => s + (byWeekMerkaz[m][k]||0), 0)),
+          type: 'line',
+          borderColor: '#1c2a5e',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          order: -1
+        }
+      ]
     },
     options: {
       ...CHART_DEFAULTS,
