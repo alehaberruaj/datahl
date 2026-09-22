@@ -654,12 +654,13 @@ function isoWeek(d) {
 
 function renderMonthly(data) {
   if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; }
-  // group by ISO week
-  const byWeek = {};
+  // group by ISO week, keep one representative date per week
+  const byWeek = {}, weekDate = {};
   data.forEach(r => {
     const { week, year } = isoWeek(r.dateObj);
     const k = `${year}-${String(week).padStart(2,'0')}`;
     byWeek[k] = (byWeek[k] || 0) + r.cantidad;
+    if (!weekDate[k]) weekDate[k] = r.dateObj;
   });
   const sorted = Object.keys(byWeek).sort();
   chartMonthly = new Chart(document.getElementById('chart-monthly'), {
@@ -667,7 +668,10 @@ function renderMonthly(data) {
     data: {
       labels: sorted.map(k => {
         const [y, w] = k.split('-');
-        return `Sem ${parseInt(w)} · ${y.slice(2)}`;
+        const d = weekDate[k];
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        return [`Sem ${parseInt(w)}`, `${dd}/${mm}/${y.slice(2)}`];
       }),
       datasets: [{
         label: 'Asistentes',
