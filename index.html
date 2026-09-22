@@ -254,7 +254,7 @@
     }
     .hl-panel__body { padding: 24px; }
     canvas { max-height: 300px; }
-    #chart-regularity { max-height: none; }
+    #chart-regularity { max-height: none; width: 100%; }
 
     /* ── Health grid ── */
     .health-grid {
@@ -468,7 +468,9 @@
         </div>
       </div>
       <div class="hl-panel__body">
-        <canvas id="chart-regularity"></canvas>
+        <div id="chart-regularity-wrap" style="position:relative">
+          <canvas id="chart-regularity"></canvas>
+        </div>
       </div>
     </div>
 
@@ -960,7 +962,7 @@ function renderRegularity(data) {
   }).sort((a, b) => b.pct - a.pct);
 
   const canvasReg = document.getElementById('chart-regularity');
-  canvasReg.style.height = Math.max(240, reg.length * 30) + 'px';
+  document.getElementById('chart-regularity-wrap').style.height = Math.max(240, reg.length * 30) + 'px';
   chartRegularity = new Chart(canvasReg, {
     type: 'bar',
     data: {
