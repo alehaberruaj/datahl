@@ -776,16 +776,38 @@ function renderMonthly(data) {
         const mm = String(d.getMonth()+1).padStart(2,'0');
         return [`Sem ${parseInt(w)}`, `${dd}/${mm}/${y.slice(2)}`];
       }),
-      datasets: ms.map((m, i) => ({
-        label: m,
-        data: sorted.map(k => byWeekMerkaz[m][k] || 0),
-        backgroundColor: COLORS[i % COLORS.length] + 'cc',
-        borderColor: COLORS[i % COLORS.length],
-        borderWidth: 1,
-        stack: 'stacked'
-      }))
+      datasets: ms.map(m => {
+        const col = COLORS[merkazList.indexOf(m) % COLORS.length];
+        return {
+          label: m,
+          data: sorted.map(k => byWeekMerkaz[m][k] || 0),
+          backgroundColor: col + 'cc',
+          borderColor: col,
+          borderWidth: 1,
+          stack: 'stacked'
+        };
+      })
     },
-    options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, x: { ...CHART_DEFAULTS.scales.x, stacked: true }, y: { ...CHART_DEFAULTS.scales.y, stacked: true } } }
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        ...CHART_DEFAULTS.scales,
+        x: { ...CHART_DEFAULTS.scales.x, stacked: true },
+        y: { ...CHART_DEFAULTS.scales.y, stacked: true }
+      },
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            footer: items => {
+              const total = items.reduce((s, i) => s + i.parsed.y, 0);
+              return `Total: ${total}`;
+            }
+          }
+        }
+      }
+    }
   });
 }
 
