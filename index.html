@@ -753,15 +753,19 @@ function isoWeek(d) {
 
 function renderMonthly(data) {
   if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; }
-  // group by ISO week, keep one representative date per week
-  const byWeek = {}, weekDate = {};
+  // group by ISO week per merkaz
+  const weekDate = {}, byWeekMerkaz = {};
+  const ms = [...activeM].filter(m => data.some(r => r.merkaz === m));
+  ms.forEach(m => byWeekMerkaz[m] = {});
   data.forEach(r => {
     const { week, year } = isoWeek(r.dateObj);
     const k = `${year}-${String(week).padStart(2,'0')}`;
-    byWeek[k] = (byWeek[k] || 0) + r.cantidad;
     if (!weekDate[k]) weekDate[k] = r.dateObj;
+    if (byWeekMerkaz[r.merkaz]) {
+      byWeekMerkaz[r.merkaz][k] = (byWeekMerkaz[r.merkaz][k] || 0) + r.cantidad;
+    }
   });
-  const sorted = Object.keys(byWeek).sort();
+  const sorted = Object.keys(weekDate).sort();
   chartMonthly = new Chart(document.getElementById('chart-monthly'), {
     type: 'bar',
     data: {
@@ -772,16 +776,16 @@ function renderMonthly(data) {
         const mm = String(d.getMonth()+1).padStart(2,'0');
         return [`Sem ${parseInt(w)}`, `${dd}/${mm}/${y.slice(2)}`];
       }),
-      datasets: [{
-        label: 'Asistentes',
-        data: sorted.map(k => byWeek[k]),
-        backgroundColor: '#2456a630',
-        borderColor: '#2456a6',
-        borderWidth: 2,
-        borderRadius: 4
-      }]
+      datasets: ms.map((m, i) => ({
+        label: m,
+        data: sorted.map(k => byWeekMerkaz[m][k] || 0),
+        backgroundColor: COLORS[i % COLORS.length] + 'cc',
+        borderColor: COLORS[i % COLORS.length],
+        borderWidth: 1,
+        stack: 'stacked'
+      }))
     },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } } }
+    options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, x: { ...CHART_DEFAULTS.scales.x, stacked: true }, y: { ...CHART_DEFAULTS.scales.y, stacked: true } } }
   });
 }
 
