@@ -432,7 +432,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v19</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v20</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -929,18 +929,6 @@ function renderMonthly(data) {
             type: 'bar'
           };
         }),
-        {
-          label: 'Total',
-          data: sorted.map(k => ms.reduce((s,m) => s + (byWeekMerkaz[m][k]||0), 0)),
-          type: 'line',
-          borderColor: '#1c2a5e',
-          backgroundColor: 'transparent',
-          borderWidth: 2.5,
-          pointRadius: 3,
-          pointHoverRadius: 5,
-          tension: 0.3,
-          order: -1
-        }
       ]
     },
     options: {
@@ -955,14 +943,36 @@ function renderMonthly(data) {
         tooltip: {
           ...CHART_DEFAULTS.plugins.tooltip,
           callbacks: {
-            footer: items => {
-              const total = items.reduce((s, i) => s + i.parsed.y, 0);
-              return `Total: ${total}`;
-            }
+            footer: items => `Total: ${items.reduce((s, i) => s + i.parsed.y, 0)}`
           }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'stackTotals',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const totals = {};
+        const topY = {};
+        chart.data.datasets.forEach((ds, di) => {
+          const meta = chart.getDatasetMeta(di);
+          if (meta.hidden) return;
+          meta.data.forEach((bar, i) => {
+            totals[i] = (totals[i] || 0) + (ds.data[i] || 0);
+            topY[i] = Math.min(topY[i] ?? Infinity, bar.y);
+          });
+        });
+        ctx.save();
+        ctx.font = "bold 10px 'Space Mono', monospace";
+        ctx.fillStyle = '#1c2a5e';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        Object.keys(totals).forEach(i => {
+          if (totals[i] > 0) ctx.fillText(totals[i], chart.getDatasetMeta(0).data[i].x, topY[i] - 2);
+        });
+        ctx.restore();
+      }
+    }]
   });
 }
 
@@ -995,7 +1005,7 @@ function renderAnnual(data) {
         pointRadius: y === maxY ? 3 : 0,
         pointHoverRadius: 5,
         spanGaps: false, tension: 0.3,
-        hidden: y !== maxY   // only current year visible by default
+        hidden: y !== maxY && y !== maxY - 1
       }))
     },
     options: CHART_DEFAULTS
@@ -1082,33 +1092,41 @@ function renderRegularity(data) {
   }).join('');
 }
 
+function p90(vals) {
+  if (!vals.length) return 0;
+  const sorted = [...vals].sort((a,b) => a-b);
+  const idx = Math.floor(sorted.length * 0.9);
+  return sorted[Math.min(idx, sorted.length - 1)];
+}
+
 function renderHealth(filteredData) {
   const activeMInPeriod = new Set(filteredData.map(r => r.merkaz));
-  const datesInPeriod = [...new Set(filteredData.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
-  const last8dates = datesInPeriod.slice(-8);
 
-  const byMDate = {};
-  allData.forEach(r => {
-    if (!byMDate[r.merkaz]) byMDate[r.merkaz] = {};
-    const k = r.dateObj.toISOString().slice(0,10);
-    byMDate[r.merkaz][k] = (byMDate[r.merkaz][k] || 0) + r.cantidad;
+  // per-merkaz: group all-time by ISO week, get weekly totals
+  const byMWeek = {};
+  allData.filter(r => r.cantidad > 0).forEach(r => {
+    const {week, year} = isoWeek(r.dateObj);
+    const k = `${year}-${String(week).padStart(2,'0')}`;
+    if (!byMWeek[r.merkaz]) byMWeek[r.merkaz] = {};
+    byMWeek[r.merkaz][k] = (byMWeek[r.merkaz][k] || 0) + r.cantidad;
   });
-  const histMaxM = {};
-  allData.filter(r => r.cantidad > 0).forEach(r => { histMaxM[r.merkaz] = Math.max(histMaxM[r.merkaz]||0, r.cantidad); });
 
   const health = {};
   merkazList.filter(m => activeM.has(m) && activeMInPeriod.has(m)).forEach(m => {
-    const vals = last8dates.map(d => byMDate[m]?.[d] ?? 0);
-    const avg8   = Math.round(vals.reduce((s,v) => s+v, 0) / 8);
-    const showed = vals.filter(v => v > 0).length;
-    const histMax = histMaxM[m] || 1;
-    health[m] = { avg8, histMax, showed, pct: Math.round(avg8/histMax*100) };
+    const weekEntries = Object.entries(byMWeek[m] || {}).sort((a,b) => a[0] > b[0] ? 1 : -1);
+    const allVals = weekEntries.map(e => e[1]);
+    const last8 = weekEntries.slice(-8).map(e => e[1]);
+    const avg8 = last8.length ? Math.round(last8.reduce((s,v)=>s+v,0) / last8.length) : 0;
+    const showed = last8.filter(v => v > 0).length;
+    const ceil = p90(allVals) || 1;
+    const pct = Math.min(100, Math.round(avg8 / ceil * 100));
+    health[m] = { avg8, ceil, showed, pct, total: last8.length };
   });
 
   const ms = Object.keys(health).sort((a,b) => health[b].pct - health[a].pct);
   const grid = document.getElementById('health-grid'); grid.innerHTML = '';
   ms.forEach(m => {
-    const {avg8, histMax, pct, showed} = health[m];
+    const {avg8, ceil, pct, showed, total} = health[m];
     const cls = pct >= 65 ? 'verde' : pct >= 40 ? 'amarillo' : 'rojo';
     const fillCol = pct >= 65 ? '#1a7f5a' : pct >= 40 ? '#e8c100' : '#c0392b';
     grid.innerHTML += `<div class="health-item">
@@ -1117,7 +1135,7 @@ function renderHealth(filteredData) {
         <span class="h-pct ${cls}">${pct}%</span>
       </div>
       <div class="h-bar-bg"><div class="h-bar-fill" style="width:${pct}%;background:${fillCol}"></div></div>
-      <div class="h-detail">${avg8} PROM · ${showed}/8 SÁB · MÁX ${histMax}</div>
+      <div class="h-detail">${avg8} PROM · ${showed}/${total} PEULOT · P90 ${ceil}</div>
     </div>`;
   });
 }
