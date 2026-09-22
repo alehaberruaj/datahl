@@ -254,7 +254,6 @@
     }
     .hl-panel__body { padding: 24px; }
     canvas { max-height: 300px; }
-    #chart-regularity { max-height: none; width: 100%; }
 
     /* ── Health grid ── */
     .health-grid {
@@ -349,7 +348,6 @@
       .hl-panel__body { padding: 12px; }
 
       canvas { max-height: 240px; }
-      #chart-regularity { max-height: none; }
 
       .health-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       .health-item { padding: 10px 12px; }
@@ -468,9 +466,7 @@
         </div>
       </div>
       <div class="hl-panel__body">
-        <div id="chart-regularity-wrap" style="position:relative">
-          <canvas id="chart-regularity"></canvas>
-        </div>
+        <div id="reg-bars"></div>
       </div>
     </div>
 
@@ -594,7 +590,6 @@ function logout() {
   if (chartMonthly)    { chartMonthly.destroy();    chartMonthly    = null; }
   if (chartAnnual)     { chartAnnual.destroy();     chartAnnual     = null; }
   if (chartShare)      { chartShare.destroy();      chartShare      = null; }
-  if (chartRegularity) { chartRegularity.destroy(); chartRegularity = null; }
   localStorage.removeItem('gtoken'); localStorage.removeItem('gtoken_exp');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -894,7 +889,7 @@ function renderAnnual(data) {
   });
 }
 
-let chartShare = null, chartRegularity = null;
+let chartShare = null;
 
 function renderShare(data) {
   if (chartShare) { chartShare.destroy(); chartShare = null; }
@@ -944,13 +939,13 @@ function renderShare(data) {
 }
 
 function renderRegularity(data) {
-  if (chartRegularity) { chartRegularity.destroy(); chartRegularity = null; }
   const allWeekends = new Set(data.map(r => {
     const { week, year } = isoWeek(r.dateObj);
     return `${year}-${String(week).padStart(2,'0')}`;
   }));
   const totalWeekends = allWeekends.size;
-  if (!totalWeekends) return;
+  const el = document.getElementById('reg-bars');
+  if (!totalWeekends) { el.innerHTML = '<p style="font-family:var(--hl-f-mono);font-size:12px;color:var(--hl-muted)">Sin datos en el período.</p>'; return; }
 
   const ms = [...activeM].filter(m => data.some(r => r.merkaz === m));
   const reg = ms.map(m => {
@@ -961,39 +956,17 @@ function renderRegularity(data) {
     return { m, pct: Math.round(mWeeks.size / totalWeekends * 100), count: mWeeks.size };
   }).sort((a, b) => b.pct - a.pct);
 
-  const canvasReg = document.getElementById('chart-regularity');
-  const wrapReg = document.getElementById('chart-regularity-wrap');
-  wrapReg.style.position = 'relative';
-  wrapReg.style.height = Math.max(240, reg.length * 30) + 'px';
-  chartRegularity = new Chart(canvasReg, {
-    type: 'bar',
-    data: {
-      labels: reg.map(r => r.m),
-      datasets: [{
-        label: '% de fines de semana con peulá',
-        data: reg.map(r => r.pct),
-        backgroundColor: reg.map(r => COLORS[merkazList.indexOf(r.m) % COLORS.length] + 'cc'),
-        borderColor:     reg.map(r => COLORS[merkazList.indexOf(r.m) % COLORS.length]),
-        borderWidth: 1.5, borderRadius: 4,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          ...CHART_DEFAULTS.plugins.tooltip,
-          callbacks: { label: ctx => ` ${ctx.raw}% — ${reg[ctx.dataIndex].count} de ${totalWeekends} fines de semana` }
-        }
-      },
-      scales: {
-        x: { ...CHART_DEFAULTS.scales.x, min: 0, max: 100, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v + '%' } },
-        y: { ...CHART_DEFAULTS.scales.y }
-      }
-    }
-  });
+  el.innerHTML = reg.map(r => {
+    const col = COLORS[merkazList.indexOf(r.m) % COLORS.length];
+    return `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="width:120px;flex-shrink:0;font-family:var(--hl-f-mono);font-size:11px;color:var(--hl-ink);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.m}">${r.m}</div>
+      <div style="flex:1;background:var(--hl-tint);border:1.5px solid var(--hl-ink);border-radius:4px;height:20px;overflow:hidden">
+        <div style="width:${r.pct}%;height:100%;background:${col};transition:width .4s"></div>
+      </div>
+      <div style="width:52px;flex-shrink:0;font-family:var(--hl-f-mono);font-size:11px;font-weight:700;color:var(--hl-ink)">${r.pct}% <span style="font-weight:400;color:var(--hl-muted)">(${r.count})</span></div>
+    </div>`;
+  }).join('');
 }
 
 function renderHealth(filteredData) {
