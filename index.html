@@ -474,13 +474,7 @@
     </div>
     <div class="sep"></div>
     <div class="pill-bar" id="pills"></div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <label style="font-family:var(--hl-f-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hl-label)">Techo</label>
-      <select id="sel-ceil">
-        <option value="p95">P95 (def.)</option>
-        <option value="p90">P90</option>
-        <option value="max">Máximo</option>
-      </select>
+    <div style="margin-left:auto">
       <button class="hl-btn" id="btn-refresh">↺ ACTUALIZAR</button>
     </div>
   </div>
@@ -533,9 +527,17 @@
 
     <div class="hl-panel">
       <div class="hl-panel__head">
-        <div>
+        <div style="flex:1">
           <div class="hl-panel__title">Estado actual por merkaz</div>
-          <div class="hl-panel__sub">Promedio de las últimas 8 peulot activas como % del máximo histórico de cada merkaz.</div>
+          <div class="hl-panel__sub">Promedio de las últimas 8 peulot como % del techo seleccionado.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <label style="font-family:var(--hl-f-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hl-label)">Techo</label>
+          <select id="sel-ceil" style="font-family:var(--hl-f-mono);font-size:11px;background:#fff;border:2px solid var(--hl-border);color:var(--hl-ink);padding:5px 8px;border-radius:var(--hl-r-field);outline:none">
+            <option value="p95">P95 (def.)</option>
+            <option value="p90">P90</option>
+            <option value="max">Máximo</option>
+          </select>
         </div>
       </div>
       <div class="hl-panel__body">
