@@ -432,7 +432,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v20</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v21</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -474,7 +474,13 @@
     </div>
     <div class="sep"></div>
     <div class="pill-bar" id="pills"></div>
-    <div style="margin-left:auto">
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <label style="font-family:var(--hl-f-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hl-label)">Techo</label>
+      <select id="sel-ceil">
+        <option value="p95">P95 (def.)</option>
+        <option value="p90">P90</option>
+        <option value="max">Máximo</option>
+      </select>
       <button class="hl-btn" id="btn-refresh">↺ ACTUALIZAR</button>
     </div>
   </div>
@@ -764,6 +770,7 @@ function initApp() {
 
   render();
   document.getElementById('sel-year').onchange = () => { buildPills(); render(); };
+  document.getElementById('sel-ceil').onchange = () => renderHealth(getFiltered());
   document.getElementById('btn-refresh').onclick = loadData;
 
   document.querySelectorAll('.hl-table th[data-col]').forEach(th => {
@@ -1092,10 +1099,10 @@ function renderRegularity(data) {
   }).join('');
 }
 
-function p90(vals) {
+function percentile(vals, p) {
   if (!vals.length) return 0;
   const sorted = [...vals].sort((a,b) => a-b);
-  const idx = Math.floor(sorted.length * 0.9);
+  const idx = Math.floor(sorted.length * p);
   return sorted[Math.min(idx, sorted.length - 1)];
 }
 
@@ -1118,9 +1125,11 @@ function renderHealth(filteredData) {
     const last8 = weekEntries.slice(-8).map(e => e[1]);
     const avg8 = last8.length ? Math.round(last8.reduce((s,v)=>s+v,0) / last8.length) : 0;
     const showed = last8.filter(v => v > 0).length;
-    const ceil = p90(allVals) || 1;
-    const pct = Math.min(100, Math.round(avg8 / ceil * 100));
-    health[m] = { avg8, ceil, showed, pct, total: last8.length };
+    const ceilMode = document.getElementById('sel-ceil')?.value || 'p95';
+    const ceil = ceilMode === 'max' ? Math.max(...allVals) : percentile(allVals, ceilMode === 'p90' ? 0.9 : 0.95);
+    const ceilSafe = ceil || 1;
+    const pct = Math.min(100, Math.round(avg8 / ceilSafe * 100));
+    health[m] = { avg8, ceil: ceilSafe, showed, pct, total: last8.length };
   });
 
   const ms = Object.keys(health).sort((a,b) => health[b].pct - health[a].pct);
@@ -1135,7 +1144,7 @@ function renderHealth(filteredData) {
         <span class="h-pct ${cls}">${pct}%</span>
       </div>
       <div class="h-bar-bg"><div class="h-bar-fill" style="width:${pct}%;background:${fillCol}"></div></div>
-      <div class="h-detail">${avg8} PROM · ${showed}/${total} PEULOT · P90 ${ceil}</div>
+      <div class="h-detail">${avg8} PROM · ${showed}/${total} PEULOT · ${(document.getElementById('sel-ceil')?.value||'p95').toUpperCase()} ${ceil}</div>
     </div>`;
   });
 }
