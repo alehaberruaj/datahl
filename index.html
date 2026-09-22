@@ -626,9 +626,11 @@ function renderKPIs(data) {
   const maxLabel = maxWeek && weekDateKPI[maxWeek]
     ? (() => { const d = weekDateKPI[maxWeek]; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; })()
     : '';
-  const lastDate = sortedD[sortedD.length - 1] || '';
-  const lastVal  = lastDate ? byDate[lastDate] : 0;
-  const lastLabel = lastDate ? lastDate.split('-').reverse().join('/') : '—';
+  const lastWeek = sortedW[sortedW.length - 1] || '';
+  const lastVal  = lastWeek ? byWeekKPI[lastWeek] : 0;
+  const lastLabel = lastWeek && weekDateKPI[lastWeek]
+    ? (() => { const d = weekDateKPI[lastWeek]; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; })()
+    : '—';
   const lastN = sortedW.slice(-4), prevN = sortedW.slice(-8,-4);
   const sumL = lastN.reduce((s,d) => s+(byWeekKPI[d]||0), 0);
   const sumP = prevN.reduce((s,d) => s+(byWeekKPI[d]||0), 0);
