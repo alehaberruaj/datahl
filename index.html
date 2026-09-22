@@ -889,7 +889,7 @@ function renderRegularity(data) {
   }).sort((a, b) => b.pct - a.pct);
 
   const canvasReg = document.getElementById('chart-regularity');
-  canvasReg.style.height = Math.max(240, reg.length * 28) + 'px';
+  canvasReg.style.height = Math.max(240, reg.length * 30) + 'px';
   chartRegularity = new Chart(canvasReg, {
     type: 'bar',
     data: {
@@ -904,9 +904,8 @@ function renderRegularity(data) {
     },
     options: {
       indexAxis: 'y',
-      ...CHART_DEFAULTS,
+      maintainAspectRatio: false,
       plugins: {
-        ...CHART_DEFAULTS.plugins,
         legend: { display: false },
         tooltip: {
           ...CHART_DEFAULTS.plugins.tooltip,
@@ -914,7 +913,7 @@ function renderRegularity(data) {
         }
       },
       scales: {
-        x: { ...CHART_DEFAULTS.scales.x, max: 100, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v + '%' } },
+        x: { ...CHART_DEFAULTS.scales.x, min: 0, max: 100, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v + '%' } },
         y: { ...CHART_DEFAULTS.scales.y }
       }
     }
