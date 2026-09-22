@@ -962,7 +962,9 @@ function renderRegularity(data) {
   }).sort((a, b) => b.pct - a.pct);
 
   const canvasReg = document.getElementById('chart-regularity');
-  document.getElementById('chart-regularity-wrap').style.height = Math.max(240, reg.length * 30) + 'px';
+  const wrapReg = document.getElementById('chart-regularity-wrap');
+  wrapReg.style.position = 'relative';
+  wrapReg.style.height = Math.max(240, reg.length * 30) + 'px';
   chartRegularity = new Chart(canvasReg, {
     type: 'bar',
     data: {
@@ -977,6 +979,7 @@ function renderRegularity(data) {
     },
     options: {
       indexAxis: 'y',
+      responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
