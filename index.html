@@ -620,6 +620,12 @@ function renderKPIs(data) {
   const lastN = sortedD.slice(-4), prevN = sortedD.slice(-8,-4);
   const sumL = lastN.reduce((s,d) => s+(byDate[d]||0), 0);
   const sumP = prevN.reduce((s,d) => s+(byDate[d]||0), 0);
+  // count merkazim with a peulá in the last 30 days (real calendar, not filtered)
+  const now30 = new Date(); now30.setDate(now30.getDate() - 30);
+  const activeCount = merkazList.filter(m => {
+    if (!activeM.has(m)) return false;
+    return allData.some(r => r.merkaz === m && r.cantidad > 0 && r.dateObj >= now30);
+  }).length;
   const delta = sumP > 0 ? Math.round((sumL-sumP)/sumP*100) : 0;
 
   document.getElementById('kpis').innerHTML = `
@@ -640,8 +646,8 @@ function renderKPIs(data) {
     </div>
     <div class="hl-stat">
       <div class="hl-stat__label">Merkazim activos</div>
-      <div class="hl-stat__value">${activeM.size}</div>
-      <div class="hl-stat__meta">de ${merkazList.length} históricos</div>
+      <div class="hl-stat__value">${activeCount}</div>
+      <div class="hl-stat__meta">de ${activeM.size} en el período</div>
     </div>`;
 }
 
