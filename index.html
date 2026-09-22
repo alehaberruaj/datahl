@@ -665,8 +665,13 @@ function renderKPIs(data) {
     </div>
     <div class="hl-stat">
       <div class="hl-stat__label">Cantidad de peulot</div>
-      <div class="hl-stat__value">${sortedW.length}</div>
-      <div class="hl-stat__meta">fines de semana con peulá</div>
+      <div class="hl-stat__value">${data.length}</div>
+      <div class="hl-stat__meta">registros individuales</div>
+    </div>
+    <div class="hl-stat">
+      <div class="hl-stat__label">Presencias</div>
+      <div class="hl-stat__value">${total.toLocaleString('es')}</div>
+      <div class="hl-stat__meta">asistentes totales sumados</div>
     </div>`;
 }
 
