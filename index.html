@@ -315,12 +315,57 @@
 
     /* ── Responsive ── */
     @media (max-width: 640px) {
-      .hl-topbar { padding: 12px 16px; }
-      .filterbar { padding: 8px 16px; }
-      .kpi-row { padding: 16px; gap: 10px; }
-      .content { padding: 0 16px 40px; }
-      .hl-stat__value { font-size: 26px; }
+      .hl-topbar { padding: 10px 14px; gap: 10px; }
       .hl-topbar__sub { display: none; }
+      .hl-topbar__logo { font-size: 15px; }
+
+      .filterbar {
+        padding: 8px 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .filterbar > .sep { display: none; }
+      .filterbar > div[style] { margin-left: 0 !important; width: 100%; }
+      .filterbar > div[style] .hl-btn { width: 100%; text-align: center; }
+      .pill-bar { gap: 4px; }
+      .mpill { font-size: 9px; padding: 3px 8px; }
+      .cat-tabs { flex-wrap: wrap; }
+      select { font-size: 12px; padding: 7px 10px; width: auto; }
+
+      .kpi-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px; padding: 12px;
+      }
+      .hl-stat { padding: 14px 12px; }
+      .hl-stat__value { font-size: 28px; }
+      .hl-stat__label { font-size: 9px; }
+      .hl-stat__meta { font-size: 10px; }
+
+      .content { padding: 0 12px 32px; gap: 14px; }
+      .hl-panel__head { padding: 12px 14px; }
+      .hl-panel__title { font-size: 13px; }
+      .hl-panel__sub { font-size: 10px; }
+      .hl-panel__body { padding: 12px; }
+
+      canvas { max-height: 240px; }
+      #chart-regularity { max-height: none; }
+
+      .health-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .health-item { padding: 10px 12px; }
+      .h-name { font-size: 11px; }
+      .h-pct { font-size: 15px; }
+
+      .table-wrap { font-size: 12px; }
+      .hl-table th { font-size: 9px; padding: 10px 10px; }
+      .hl-table td { padding: 10px 10px; font-size: 12px; }
+
+      .login-card { padding: 24px 20px; }
+      .login-bubble h2 { font-size: 26px; }
+
+      .kpi-info__tip { width: 150px; font-size: 9px; }
+
+      .hl-footer { padding: 12px 16px; }
     }
   </style>
 </head>
