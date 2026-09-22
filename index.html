@@ -405,6 +405,30 @@
     <div class="hl-panel">
       <div class="hl-panel__head">
         <div>
+          <div class="hl-panel__title">Participación relativa</div>
+          <div class="hl-panel__sub">Qué % del total de asistentes aportó cada merkaz por mes. Muestra si el movimiento depende de pocos merkazim grandes.</div>
+        </div>
+      </div>
+      <div class="hl-panel__body">
+        <canvas id="chart-share"></canvas>
+      </div>
+    </div>
+
+    <div class="hl-panel">
+      <div class="hl-panel__head">
+        <div>
+          <div class="hl-panel__title">Regularidad por merkaz</div>
+          <div class="hl-panel__sub">% de los fines de semana activos de la tnu'a en que cada merkaz tuvo peulá. Un merkaz puede tener buena asistencia pero poca regularidad.</div>
+        </div>
+      </div>
+      <div class="hl-panel__body">
+        <canvas id="chart-regularity"></canvas>
+      </div>
+    </div>
+
+    <div class="hl-panel">
+      <div class="hl-panel__head">
+        <div>
           <div class="hl-panel__title">Estado actual por merkaz</div>
           <div class="hl-panel__sub">Promedio de las últimas 8 peulot activas como % del máximo histórico de cada merkaz.</div>
         </div>
@@ -519,8 +543,10 @@ window.onload = () => {
 function logout() {
   google.accounts.oauth2.revoke(accessToken, () => {});
   accessToken = null; allData = [];
-  if (chartMonthly) { chartMonthly.destroy(); chartMonthly = null; }
-  if (chartAnnual)  { chartAnnual.destroy();  chartAnnual  = null; }
+  if (chartMonthly)    { chartMonthly.destroy();    chartMonthly    = null; }
+  if (chartAnnual)     { chartAnnual.destroy();     chartAnnual     = null; }
+  if (chartShare)      { chartShare.destroy();      chartShare      = null; }
+  if (chartRegularity) { chartRegularity.destroy(); chartRegularity = null; }
   localStorage.removeItem('gtoken'); localStorage.removeItem('gtoken_exp');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -794,6 +820,114 @@ function renderAnnual(data) {
   });
 }
 
+let chartShare = null, chartRegularity = null;
+
+function renderShare(data) {
+  if (chartShare) { chartShare.destroy(); chartShare = null; }
+  // group by month, per merkaz
+  const months = [...new Set(data.map(r => `${r.anio}-${String(r.mes).padStart(2,'0')}`))].sort();
+  const ms = [...activeM].filter(m => data.some(r => r.merkaz === m));
+  chartShare = new Chart(document.getElementById('chart-share'), {
+    type: 'bar',
+    data: {
+      labels: months.map(k => { const [y,m] = k.split('-'); return `${MONTHS[parseInt(m)-1]} ${y.slice(2)}`; }),
+      datasets: ms.map((m, i) => {
+        const col = COLORS[merkazList.indexOf(m) % COLORS.length];
+        return {
+          label: m,
+          data: months.map(k => {
+            const [y, mo] = k.split('-');
+            return data.filter(r => r.merkaz === m && r.anio === parseInt(y) && r.mes === parseInt(mo))
+                       .reduce((s, r) => s + r.cantidad, 0);
+          }),
+          backgroundColor: col + 'cc',
+          borderColor: col,
+          borderWidth: 1,
+        };
+      })
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, stacked: true },
+        y: { ...CHART_DEFAULTS.scales.y, stacked: true, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + '%' }, max: 100 }
+      },
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            label: ctx => {
+              const total = ctx.chart.data.datasets.reduce((s, ds) => s + (ds.data[ctx.dataIndex] || 0), 0);
+              const pct = total > 0 ? Math.round(ctx.raw / total * 100) : 0;
+              return ` ${ctx.dataset.label}: ${ctx.raw} (${pct}%)`;
+            }
+          }
+        }
+      },
+      // normalize to 100%
+      parsing: false,
+      animation: false,
+    },
+  });
+  // post-process: normalize to %
+  const datasets = chartShare.data.datasets;
+  months.forEach((_, i) => {
+    const total = datasets.reduce((s, ds) => s + (ds.data[i] || 0), 0);
+    if (total > 0) datasets.forEach(ds => { ds.data[i] = Math.round(ds.data[i] / total * 100); });
+  });
+  chartShare.update();
+}
+
+function renderRegularity(data) {
+  if (chartRegularity) { chartRegularity.destroy(); chartRegularity = null; }
+  const allWeekends = new Set(data.map(r => {
+    const { week, year } = isoWeek(r.dateObj);
+    return `${year}-${String(week).padStart(2,'0')}`;
+  }));
+  const totalWeekends = allWeekends.size;
+  if (!totalWeekends) return;
+
+  const ms = [...activeM].filter(m => data.some(r => r.merkaz === m));
+  const reg = ms.map(m => {
+    const mWeeks = new Set(data.filter(r => r.merkaz === m).map(r => {
+      const { week, year } = isoWeek(r.dateObj);
+      return `${year}-${String(week).padStart(2,'0')}`;
+    }));
+    return { m, pct: Math.round(mWeeks.size / totalWeekends * 100), count: mWeeks.size };
+  }).sort((a, b) => b.pct - a.pct);
+
+  chartRegularity = new Chart(document.getElementById('chart-regularity'), {
+    type: 'bar',
+    data: {
+      labels: reg.map(r => r.m),
+      datasets: [{
+        label: '% de fines de semana con peulá',
+        data: reg.map(r => r.pct),
+        backgroundColor: reg.map(r => r.pct >= 75 ? '#1a7f5a99' : r.pct >= 40 ? '#2456a699' : '#8d96b899'),
+        borderColor:     reg.map(r => r.pct >= 75 ? '#1a7f5a'   : r.pct >= 40 ? '#2456a6'   : '#8d96b8'),
+        borderWidth: 1.5, borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false },
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: { label: ctx => ` ${ctx.raw}% — ${reg[ctx.dataIndex].count} de ${totalWeekends} fines de semana` }
+        }
+      },
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, max: 100, ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v + '%' } },
+        y: { ...CHART_DEFAULTS.scales.y }
+      }
+    }
+  });
+}
+
 function renderHealth(filteredData) {
   const activeMInPeriod = new Set(filteredData.map(r => r.merkaz));
   const datesInPeriod = [...new Set(filteredData.map(r => r.dateObj.toISOString().slice(0,10)))].sort();
@@ -918,6 +1052,8 @@ function render() {
   renderKPIs(data);
   renderMonthly(data);
   renderAnnual(data);
+  renderShare(data);
+  renderRegularity(data);
   renderHealth(data);
   renderTable();
 }
