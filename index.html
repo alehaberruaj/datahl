@@ -824,59 +824,49 @@ let chartShare = null, chartRegularity = null;
 
 function renderShare(data) {
   if (chartShare) { chartShare.destroy(); chartShare = null; }
-  // group by month, per merkaz
   const months = [...new Set(data.map(r => `${r.anio}-${String(r.mes).padStart(2,'0')}`))].sort();
   const ms = [...activeM].filter(m => data.some(r => r.merkaz === m));
+
+  // pre-compute absolute values per merkaz per month
+  const abs = {};
+  ms.forEach(m => {
+    abs[m] = months.map(k => {
+      const [y, mo] = k.split('-');
+      return data.filter(r => r.merkaz === m && r.anio === parseInt(y) && r.mes === parseInt(mo))
+                 .reduce((s, r) => s + r.cantidad, 0);
+    });
+  });
+  // convert to %
+  const pctData = {};
+  months.forEach((_, i) => {
+    const total = ms.reduce((s, m) => s + (abs[m][i] || 0), 0);
+    ms.forEach(m => { if (!pctData[m]) pctData[m] = []; pctData[m].push(total > 0 ? Math.round(abs[m][i] / total * 100) : 0); });
+  });
+
   chartShare = new Chart(document.getElementById('chart-share'), {
     type: 'bar',
     data: {
       labels: months.map(k => { const [y,m] = k.split('-'); return `${MONTHS[parseInt(m)-1]} ${y.slice(2)}`; }),
-      datasets: ms.map((m, i) => {
+      datasets: ms.map(m => {
         const col = COLORS[merkazList.indexOf(m) % COLORS.length];
-        return {
-          label: m,
-          data: months.map(k => {
-            const [y, mo] = k.split('-');
-            return data.filter(r => r.merkaz === m && r.anio === parseInt(y) && r.mes === parseInt(mo))
-                       .reduce((s, r) => s + r.cantidad, 0);
-          }),
-          backgroundColor: col + 'cc',
-          borderColor: col,
-          borderWidth: 1,
-        };
+        return { label: m, data: pctData[m], backgroundColor: col + 'cc', borderColor: col, borderWidth: 1 };
       })
     },
     options: {
       ...CHART_DEFAULTS,
       scales: {
         x: { ...CHART_DEFAULTS.scales.x, stacked: true },
-        y: { ...CHART_DEFAULTS.scales.y, stacked: true, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + '%' }, max: 100 }
+        y: { ...CHART_DEFAULTS.scales.y, stacked: true, max: 100, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + '%' } }
       },
       plugins: {
         ...CHART_DEFAULTS.plugins,
         tooltip: {
           ...CHART_DEFAULTS.plugins.tooltip,
-          callbacks: {
-            label: ctx => {
-              const total = ctx.chart.data.datasets.reduce((s, ds) => s + (ds.data[ctx.dataIndex] || 0), 0);
-              const pct = total > 0 ? Math.round(ctx.raw / total * 100) : 0;
-              return ` ${ctx.dataset.label}: ${ctx.raw} (${pct}%)`;
-            }
-          }
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}% (${abs[ctx.dataset.label][ctx.dataIndex]} asist.)` }
         }
-      },
-      // normalize to 100%
-      parsing: false,
-      animation: false,
-    },
+      }
+    }
   });
-  // post-process: normalize to %
-  const datasets = chartShare.data.datasets;
-  months.forEach((_, i) => {
-    const total = datasets.reduce((s, ds) => s + (ds.data[i] || 0), 0);
-    if (total > 0) datasets.forEach(ds => { ds.data[i] = Math.round(ds.data[i] / total * 100); });
-  });
-  chartShare.update();
 }
 
 function renderRegularity(data) {
@@ -973,31 +963,33 @@ function renderTable() {
   const filtered = getFiltered();
 
   // sessions in the filtered period per merkaz
-  const byMFiltered = {};
-  filtered.forEach(r => {
-    if (!byMFiltered[r.merkaz]) byMFiltered[r.merkaz] = new Set();
-    byMFiltered[r.merkaz].add(r.dateObj.toISOString().slice(0,10));
+  const byMPeriod = {};
+  filtered.filter(r => r.cantidad > 0).forEach(r => {
+    if (!byMPeriod[r.merkaz]) byMPeriod[r.merkaz] = [];
+    byMPeriod[r.merkaz].push({ date: r.dateObj, qty: r.cantidad, fecha: r.fecha });
   });
 
-  // all-time sessions per merkaz
-  const byM = {};
+  // all-time sessions per merkaz (for hist stats)
+  const byMAll = {};
   allData.filter(r => r.cantidad > 0).forEach(r => {
-    if (!byM[r.merkaz]) byM[r.merkaz] = [];
-    byM[r.merkaz].push({ date: r.dateObj, qty: r.cantidad, fecha: r.fecha });
+    if (!byMAll[r.merkaz]) byMAll[r.merkaz] = [];
+    byMAll[r.merkaz].push({ date: r.dateObj, qty: r.cantidad });
   });
 
   const rows = [];
   merkazList.filter(m => activeM.has(m)).forEach(m => {
-    const sessions = (byM[m]||[]).sort((a,b) => a.date - b.date);
-    if (!sessions.length) return;
-    const last = sessions[sessions.length-1];
-    const histAvg = Math.round(sessions.reduce((s,x) => s+x.qty, 0) / sessions.length);
-    const histMax = Math.max(...sessions.map(s => s.qty));
-    const daysSince = Math.round((now - last.date) / 86400000);
+    const periodSessions = (byMPeriod[m]||[]).sort((a,b) => a.date - b.date);
+    if (!periodSessions.length) return; // hide merkazim with no data in period
+    const allSessions = (byMAll[m]||[]);
+    const last = periodSessions[periodSessions.length-1];
+    const histAvg = allSessions.length ? Math.round(allSessions.reduce((s,x) => s+x.qty, 0) / allSessions.length) : 0;
+    const histMax = allSessions.length ? Math.max(...allSessions.map(s => s.qty)) : 0;
+    // status always based on real time (all-time last peulá)
+    const allLast = allSessions.sort((a,b) => a.date - b.date).at(-1);
+    const daysSince = allLast ? Math.round((now - allLast.date) / 86400000) : 9999;
     const status = daysSince <= 30 ? 'verde' : daysSince <= 90 ? 'amarillo' : 'rojo';
     const statusLabel = daysSince <= 30 ? 'Activo' : daysSince <= 90 ? 'Pausa' : 'Inactivo';
-    const peulotPeriod = byMFiltered[m]?.size ?? 0;
-    rows.push({ m, cat: merkCat[m]||'chico', fecha: last.fecha, lastQty: last.qty, peulotPeriod, histAvg, histMax, total: sessions.length, status, statusLabel });
+    rows.push({ m, cat: merkCat[m]||'chico', fecha: last.fecha, lastQty: last.qty, peulotPeriod: periodSessions.length, histAvg, histMax, total: allSessions.length, status, statusLabel });
   });
   const statusOrder = { verde: 0, amarillo: 1, rojo: 2 };
   const catOrder = { grande: 0, mediano: 1, chico: 2 };
