@@ -432,7 +432,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v17</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v18</span></div>
     <div class="hl-topbar__sub">ASISTENCIA ✳ MERKAZIM</div>
   </div>
   <div class="hl-topbar__right">
@@ -585,9 +585,13 @@
 <div id="mk-dash">
   <header class="mk-topbar">
     <button class="mk-back" id="mk-back">← VOLVER</button>
-    <div>
+    <div style="flex:1">
       <div class="mk-title" id="mk-dash-title">—</div>
       <div id="mk-dash-meta" style="margin-top:4px;display:flex;gap:8px;align-items:center"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <label style="font-family:var(--hl-f-mono);font-size:10px;color:#8d96b8;letter-spacing:.1em;text-transform:uppercase">Año</label>
+      <select id="mk-sel-year" style="font-family:var(--hl-f-mono);font-size:11px;background:#fff;border:2px solid var(--hl-accent);color:var(--hl-ink);padding:6px 10px;border-radius:var(--hl-r-field);cursor:pointer;outline:none"></select>
     </div>
   </header>
   <div class="mk-hero" id="mk-hero"></div>
@@ -808,7 +812,12 @@ function buildPills() {
     p.style.color = on ? '#fff' : col;
     p.style.background = on ? col : 'transparent';
     p.onclick = () => {
-      if (activeM.has(m)) {
+      const catM = merkazList.filter(x => activeCat === 'all' || merkCat[x] === activeCat);
+      const allOn = catM.every(x => activeM.has(x));
+      if (allOn) {
+        // todos activos → solo este
+        activeM = new Set([m]);
+      } else if (activeM.has(m)) {
         if (activeM.size > 1) activeM.delete(m);
       } else {
         activeM.add(m);
@@ -1216,8 +1225,22 @@ function openMerkaz(m) {
   location.hash = 'merkaz=' + encodeURIComponent(m);
 }
 
-function renderMerkazDash(m) {
-  const mData = allData.filter(r => r.merkaz === m && r.cantidad > 0);
+function renderMerkazDash(m, yearOverride) {
+  // populate year selector
+  const allMData = allData.filter(r => r.merkaz === m && r.cantidad > 0);
+  const sel = document.getElementById('mk-sel-year');
+  const mkYears = [...new Set(allMData.map(r=>r.anio))].sort();
+  sel.innerHTML = '<option value="all">Todos</option>' + mkYears.map(y=>`<option value="${y}">${y}</option>`).join('');
+  const chosenYear = yearOverride ?? sel.value;
+  const curY = new Date().getFullYear();
+  if (!yearOverride) {
+    sel.value = mkYears.includes(curY) ? curY : (mkYears.at(-1) ?? 'all');
+  } else {
+    sel.value = chosenYear;
+  }
+  sel.onchange = () => renderMerkazDash(m, sel.value);
+
+  const mData = allMData.filter(r => sel.value === 'all' || r.anio === +sel.value);
   if (!mData.length) return;
 
   const col = COLORS[merkazList.indexOf(m) % COLORS.length];
@@ -1291,16 +1314,16 @@ function renderMerkazDash(m) {
     </div>`;
   }).join('');
 
-  // Annual chart (line per year)
+  // Annual chart (line per year) — always uses all years
   if (mkAnnualChart) { mkAnnualChart.destroy(); mkAnnualChart = null; }
   const byYW = {};
-  mData.forEach(r => {
+  allMData.forEach(r => {
     const {week} = isoWeek(r.dateObj);
     if (!byYW[r.anio]) byYW[r.anio] = {};
     byYW[r.anio][week] = (byYW[r.anio][week]||0) + r.cantidad;
   });
   const annualYears = Object.keys(byYW).map(Number).sort();
-  const allWeeks = [...new Set(mData.map(r=>isoWeek(r.dateObj).week))].sort((a,b)=>a-b);
+  const allWeeks = [...new Set(allMData.map(r=>isoWeek(r.dateObj).week))].sort((a,b)=>a-b);
   const maxY = Math.max(...annualYears);
   const palette = ['#dbe6f8','#8d96b8','#5f4ea3','#2456a6','#d0648f'];
   mkAnnualChart = new Chart(document.getElementById('mk-chart-annual'), {
