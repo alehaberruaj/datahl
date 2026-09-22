@@ -607,19 +607,31 @@ function buildPills() {
 
 function renderKPIs(data) {
   const total = data.reduce((s,r) => s+r.cantidad, 0);
+  // group by date for last-peulá KPI
   const byDate = {};
   data.forEach(r => { const k = r.dateObj.toISOString().slice(0,10); byDate[k] = (byDate[k]||0) + r.cantidad; });
   const sortedD = Object.keys(byDate).sort();
-  const avg = sortedD.length ? Math.round(total / sortedD.length) : 0;
-  const maxDate = sortedD.reduce((a,b) => byDate[a] >= byDate[b] ? a : b, sortedD[0]||'');
-  const maxVal  = maxDate ? byDate[maxDate] : 0;
-  const maxLabel = maxDate ? maxDate.split('-').reverse().join('/') : '';
+  // group by ISO week for "mejor peulá" and average
+  const byWeekKPI = {}, weekDateKPI = {};
+  data.forEach(r => {
+    const { week, year } = isoWeek(r.dateObj);
+    const k = `${year}-${String(week).padStart(2,'0')}`;
+    byWeekKPI[k] = (byWeekKPI[k] || 0) + r.cantidad;
+    if (!weekDateKPI[k] || r.dateObj < weekDateKPI[k]) weekDateKPI[k] = r.dateObj;
+  });
+  const sortedW = Object.keys(byWeekKPI).sort();
+  const avg = sortedW.length ? Math.round(total / sortedW.length) : 0;
+  const maxWeek = sortedW.reduce((a,b) => byWeekKPI[a] >= byWeekKPI[b] ? a : b, sortedW[0]||'');
+  const maxVal  = maxWeek ? byWeekKPI[maxWeek] : 0;
+  const maxLabel = maxWeek && weekDateKPI[maxWeek]
+    ? (() => { const d = weekDateKPI[maxWeek]; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; })()
+    : '';
   const lastDate = sortedD[sortedD.length - 1] || '';
   const lastVal  = lastDate ? byDate[lastDate] : 0;
   const lastLabel = lastDate ? lastDate.split('-').reverse().join('/') : '—';
-  const lastN = sortedD.slice(-4), prevN = sortedD.slice(-8,-4);
-  const sumL = lastN.reduce((s,d) => s+(byDate[d]||0), 0);
-  const sumP = prevN.reduce((s,d) => s+(byDate[d]||0), 0);
+  const lastN = sortedW.slice(-4), prevN = sortedW.slice(-8,-4);
+  const sumL = lastN.reduce((s,d) => s+(byWeekKPI[d]||0), 0);
+  const sumP = prevN.reduce((s,d) => s+(byWeekKPI[d]||0), 0);
   // count merkazim with a peulá in the last 30 days (real calendar, not filtered)
   const now30 = new Date(); now30.setDate(now30.getDate() - 30);
   const activeCount = merkazList.filter(m => {
