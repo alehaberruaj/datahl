@@ -194,7 +194,31 @@
     .hl-stat__label {
       font-family: var(--hl-f-mono); font-weight: 700; font-size: 10px;
       letter-spacing: .1em; color: var(--hl-label); text-transform: uppercase;
+      display: flex; align-items: center; gap: 5px;
     }
+    .kpi-info { position: relative; display: inline-flex; }
+    .kpi-info__icon {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1.5px solid var(--hl-muted); color: var(--hl-muted);
+      font-family: var(--hl-f-body); font-size: 9px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: default; flex-shrink: 0; text-transform: none; letter-spacing: 0;
+    }
+    .kpi-info__tip {
+      display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%);
+      background: var(--hl-ink); color: #dbe6f8;
+      font-family: var(--hl-f-mono); font-size: 10px; font-weight: 400;
+      letter-spacing: .03em; text-transform: none;
+      padding: 8px 10px; border-radius: 8px; white-space: nowrap;
+      box-shadow: 0 3px 0 var(--hl-focus); z-index: 10; line-height: 1.5;
+      pointer-events: none;
+    }
+    .kpi-info__tip::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: var(--hl-ink);
+    }
+    .kpi-info:hover .kpi-info__tip { display: block; }
     .hl-stat__value {
       font-family: var(--hl-f-black); font-size: 34px; color: var(--hl-ink); line-height: 1;
     }
@@ -642,36 +666,37 @@ function renderKPIs(data) {
   }).length;
   const delta = sumP > 0 ? Math.round((sumL-sumP)/sumP*100) : 0;
 
+  const info = t => `<span class="kpi-info"><span class="kpi-info__icon">i</span><span class="kpi-info__tip">${t}</span></span>`;
   document.getElementById('kpis').innerHTML = `
     <div class="hl-stat">
-      <div class="hl-stat__label">Última peulá</div>
+      <div class="hl-stat__label">Última peulá ${info('Total de asistentes sumando todos los merkazim\nque tuvieron peulá ese fin de semana.')}</div>
       <div class="hl-stat__value highlight">${lastVal.toLocaleString('es')}</div>
       <div class="hl-stat__meta">${lastLabel}</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Promedio por peulá</div>
+      <div class="hl-stat__label">Promedio por peulá ${info('Promedio de presencias por fin de semana\nen el período seleccionado.')}</div>
       <div class="hl-stat__value">${avg.toLocaleString('es')}</div>
       <div class="hl-stat__delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs 4 peulot atrás</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Mejor peulá</div>
+      <div class="hl-stat__label">Mejor peulá ${info('El fin de semana con más presencias totales\nen el período seleccionado.')}</div>
       <div class="hl-stat__value">${maxVal.toLocaleString('es')}</div>
       <div class="hl-stat__meta">${maxLabel}</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Merkazim activos</div>
+      <div class="hl-stat__label">Merkazim activos ${info('Merkazim con al menos una peulá\nen los últimos 30 días.')}</div>
       <div class="hl-stat__value">${activeCount}</div>
       <div class="hl-stat__meta">de ${activeM.size} en el período</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Cantidad de peulot</div>
+      <div class="hl-stat__label">Cantidad de peulot ${info('Total de peulot registradas entre todos\nlos merkazim en el período seleccionado.')}</div>
       <div class="hl-stat__value">${data.length}</div>
-      <div class="hl-stat__meta">registros individuales</div>
+      <div class="hl-stat__meta">en el período</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Presencias</div>
+      <div class="hl-stat__label">Presencias ${info('Suma de todos los asistentes de todos los merkazim\nen el período seleccionado.')}</div>
       <div class="hl-stat__value">${total.toLocaleString('es')}</div>
-      <div class="hl-stat__meta">asistentes totales sumados</div>
+      <div class="hl-stat__meta">asistentes totales</div>
     </div>`;
 }
 
