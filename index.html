@@ -254,6 +254,7 @@
     }
     .hl-panel__body { padding: 24px; }
     canvas { max-height: 300px; }
+    #chart-regularity { max-height: none; }
 
     /* ── Health grid ── */
     .health-grid {
@@ -458,7 +459,7 @@
                 <th class="tn" data-col="peulotPeriod">Peulot período<i class="sort-arrow">↕</i></th>
                 <th class="tn" data-col="histAvg">Prom. hist.<i class="sort-arrow">↕</i></th>
                 <th class="tn" data-col="histMax">Máx. hist.<i class="sort-arrow">↕</i></th>
-                <th class="tn" data-col="total">Peulot total<i class="sort-arrow">↕</i></th>
+                <th class="tn" data-col="total">Peulot hist.<i class="sort-arrow">↕</i></th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
@@ -887,7 +888,9 @@ function renderRegularity(data) {
     return { m, pct: Math.round(mWeeks.size / totalWeekends * 100), count: mWeeks.size };
   }).sort((a, b) => b.pct - a.pct);
 
-  chartRegularity = new Chart(document.getElementById('chart-regularity'), {
+  const canvasReg = document.getElementById('chart-regularity');
+  canvasReg.style.height = Math.max(240, reg.length * 28) + 'px';
+  chartRegularity = new Chart(canvasReg, {
     type: 'bar',
     data: {
       labels: reg.map(r => r.m),
