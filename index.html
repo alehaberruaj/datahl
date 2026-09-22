@@ -352,7 +352,7 @@
       <div class="hl-panel__head">
         <div>
           <div class="hl-panel__title">Asistencia semanal</div>
-          <div class="hl-panel__sub">Total de asistentes por sábado en el período seleccionado.</div>
+          <div class="hl-panel__sub">Total de asistentes por peulá en el período seleccionado.</div>
         </div>
       </div>
       <div class="hl-panel__body">
@@ -376,7 +376,7 @@
       <div class="hl-panel__head">
         <div>
           <div class="hl-panel__title">Estado actual por merkaz</div>
-          <div class="hl-panel__sub">Promedio de los últimos 8 sábados activos como % del máximo histórico de cada merkaz.</div>
+          <div class="hl-panel__sub">Promedio de las últimas 8 peulot activas como % del máximo histórico de cada merkaz.</div>
         </div>
       </div>
       <div class="hl-panel__body">
@@ -624,17 +624,17 @@ function renderKPIs(data) {
 
   document.getElementById('kpis').innerHTML = `
     <div class="hl-stat">
-      <div class="hl-stat__label">Último sábado</div>
+      <div class="hl-stat__label">Última peulá</div>
       <div class="hl-stat__value highlight">${lastVal.toLocaleString('es')}</div>
       <div class="hl-stat__meta">${lastLabel}</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Promedio por sábado</div>
+      <div class="hl-stat__label">Promedio por peulá</div>
       <div class="hl-stat__value">${avg.toLocaleString('es')}</div>
-      <div class="hl-stat__delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs 4 sáb. atrás</div>
+      <div class="hl-stat__delta ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ '}${delta}% vs 4 peulot atrás</div>
     </div>
     <div class="hl-stat">
-      <div class="hl-stat__label">Mejor sábado</div>
+      <div class="hl-stat__label">Mejor peulá</div>
       <div class="hl-stat__value">${maxVal.toLocaleString('es')}</div>
       <div class="hl-stat__meta">${maxLabel}</div>
     </div>
