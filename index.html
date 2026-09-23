@@ -363,6 +363,16 @@
       .mk-panel__body { padding: 14px 16px; }
     }
 
+    /* ── Period badge ── */
+    .period-badge {
+      font-family: var(--hl-f-mono); font-size: 9px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      background: var(--hl-tint); color: var(--hl-label);
+      border: 1.5px solid var(--hl-border); border-radius: var(--hl-r-pill);
+      padding: 2px 8px; white-space: nowrap; flex-shrink: 0;
+    }
+    .period-badge.fixed { background: #eceadf; color: var(--hl-muted); border-color: var(--hl-muted); }
+
     /* ── Panel tabs ── */
     .panel-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--hl-tint); }
     .panel-tab {
@@ -463,7 +473,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v23</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v24</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -517,7 +527,10 @@
     <div class="hl-panel">
       <div class="hl-panel__head">
         <div>
-          <div class="hl-panel__title">Asistencia semanal</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="hl-panel__title">Asistencia semanal</div>
+            <span class="period-badge" id="pb-monthly"></span>
+          </div>
           <div class="hl-panel__sub">Total de asistentes por peulá en el período seleccionado.</div>
         </div>
       </div>
@@ -528,7 +541,10 @@
 
     <div class="hl-panel">
       <div class="hl-panel__head">
-        <div class="hl-panel__title">Comparación por año</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="hl-panel__title">Comparación por año</div>
+          <span class="period-badge fixed">histórico</span>
+        </div>
       </div>
       <div class="panel-tabs">
         <button class="panel-tab active" data-tab="annual-chart">Gráfico</button>
@@ -560,7 +576,10 @@
     <div class="hl-panel">
       <div class="hl-panel__head">
         <div>
-          <div class="hl-panel__title">Regularidad por merkaz</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="hl-panel__title">Regularidad por merkaz</div>
+            <span class="period-badge" id="pb-reg"></span>
+          </div>
           <div class="hl-panel__sub">% de los fines de semana activos de la tnu'a en que cada merkaz tuvo peulá. Un merkaz puede tener buena asistencia pero poca regularidad.</div>
         </div>
       </div>
@@ -572,7 +591,10 @@
     <div class="hl-panel">
       <div class="hl-panel__head">
         <div style="flex:1">
-          <div class="hl-panel__title">Estado actual por merkaz</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="hl-panel__title">Estado actual por merkaz</div>
+            <span class="period-badge fixed">últimas 8 peulot</span>
+          </div>
           <div class="hl-panel__sub">Promedio de las últimas 8 peulot como % del techo seleccionado.</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -592,7 +614,10 @@
     <div class="hl-panel">
       <div class="hl-panel__head">
         <div>
-          <div class="hl-panel__title">Resumen por merkaz</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="hl-panel__title">Resumen por merkaz</div>
+            <span class="period-badge" id="pb-table"></span>
+          </div>
           <div class="hl-panel__sub">El punto indica actividad: verde = activo (≤30 días) · amarillo = pausa (≤90 días) · rojo = inactivo.</div>
         </div>
       </div>
@@ -1307,6 +1332,12 @@ function renderTable() {
 
 function render() {
   const data = getFiltered();
+  const yearVal = document.getElementById('sel-year').value;
+  const periodLabel = yearVal === 'all' ? 'todos los años' : yearVal;
+  ['pb-monthly','pb-reg','pb-table'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = periodLabel;
+  });
   renderKPIs(data);
   renderMonthly(data);
   renderAnnual();
