@@ -363,6 +363,37 @@
       .mk-panel__body { padding: 14px 16px; }
     }
 
+    /* ── Panel tabs ── */
+    .panel-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--hl-tint); }
+    .panel-tab {
+      font-family: var(--hl-f-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 10px 18px; border: none; background: none; cursor: pointer;
+      color: var(--hl-muted); border-bottom: 3px solid transparent; margin-bottom: -2px;
+      transition: color .12s;
+    }
+    .panel-tab.active { color: var(--hl-ink); border-bottom-color: var(--hl-ink); }
+    .panel-tab-body { display: none; }
+    .panel-tab-body.active { display: block; }
+
+    /* ── Annual summary table ── */
+    .annual-tbl { width: 100%; border-collapse: collapse; }
+    .annual-tbl th {
+      font-family: var(--hl-f-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--hl-label);
+      padding: 10px 14px; border-bottom: 2px solid var(--hl-ink); text-align: right;
+    }
+    .annual-tbl th:first-child { text-align: left; }
+    .annual-tbl td {
+      padding: 10px 14px; border-bottom: 1px solid var(--hl-tint);
+      font-family: var(--hl-f-mono); font-size: 13px; text-align: right;
+    }
+    .annual-tbl td:first-child { font-family: var(--hl-f-black); font-size: 15px; text-align: left; color: var(--hl-ink); }
+    .annual-tbl tbody tr:hover { background: #f9f8f2; }
+    .ann-delta { font-size: 10px; font-weight: 700; margin-left: 4px; }
+    .ann-delta.up { color: #1a7f5a; }
+    .ann-delta.dn { color: #c0392b; }
+
     /* ── Footer ── */
     .hl-footer {
       border-top: 3px solid var(--hl-ink); background: var(--hl-tint);
@@ -432,7 +463,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v22</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v23</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -497,18 +528,31 @@
 
     <div class="hl-panel">
       <div class="hl-panel__head">
-        <div style="flex:1">
-          <div class="hl-panel__title">Comparación por año</div>
-          <div class="hl-panel__sub">Asistencia por semana — compará dos años puntales.</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <div class="hl-panel__title">Comparación por año</div>
+      </div>
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-tab="annual-chart">Gráfico</button>
+        <button class="panel-tab" data-tab="annual-table">Tabla resumen</button>
+      </div>
+      <div id="annual-chart" class="panel-tab-body active" style="padding:24px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px">
           <select id="annual-year-a" style="font-family:var(--hl-f-mono);font-size:11px;background:#fff;border:2px solid var(--hl-border);color:var(--hl-ink);padding:5px 8px;border-radius:var(--hl-r-field);outline:none"></select>
           <span style="font-family:var(--hl-f-mono);font-size:10px;color:var(--hl-muted)">vs</span>
           <select id="annual-year-b" style="font-family:var(--hl-f-mono);font-size:11px;background:#fff;border:2px solid var(--hl-border);color:var(--hl-ink);padding:5px 8px;border-radius:var(--hl-r-field);outline:none"></select>
         </div>
-      </div>
-      <div class="hl-panel__body">
         <canvas id="chart-annual"></canvas>
+      </div>
+      <div id="annual-table" class="panel-tab-body" style="overflow-x:auto">
+        <table class="annual-tbl">
+          <thead><tr>
+            <th>Año</th>
+            <th>Presencias</th>
+            <th>Peulot</th>
+            <th>Prom. / peulá</th>
+            <th>Merkazim activos</th>
+          </tr></thead>
+          <tbody id="annual-tbl-body"></tbody>
+        </table>
       </div>
     </div>
 
@@ -1416,6 +1460,16 @@ function closeMerkazDash() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // panel tabs
+  document.querySelectorAll('.panel-tab').forEach(tab => {
+    tab.onclick = () => {
+      const panel = tab.closest('.hl-panel');
+      panel.querySelectorAll('.panel-tab').forEach(t => t.classList.toggle('active', t === tab));
+      panel.querySelectorAll('.panel-tab-body').forEach(b => b.classList.toggle('active', b.id === tab.dataset.tab));
+      if (tab.dataset.tab === 'annual-table') renderAnnualTable();
+    };
+  });
+
   document.getElementById('mk-back').onclick = closeMerkazDash;
   window.addEventListener('hashchange', () => {
     const hash = decodeURIComponent(location.hash.slice(1));
@@ -1426,6 +1480,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function renderAnnualTable() {
+  const base = allData.filter(r => activeM.has(r.merkaz) && r.cantidad > 0);
+  const years = [...new Set(base.map(r => r.anio))].sort((a,b) => b - a);
+
+  const byYear = {};
+  years.forEach(y => {
+    const rows = base.filter(r => r.anio === y);
+    const byWeek = {};
+    rows.forEach(r => {
+      const { week } = isoWeek(r.dateObj);
+      byWeek[week] = (byWeek[week] || 0) + r.cantidad;
+    });
+    const weekTotals = Object.values(byWeek);
+    const peulot = weekTotals.length;
+    const presencias = weekTotals.reduce((s,v) => s+v, 0);
+    const prom = peulot ? Math.round(presencias / peulot) : 0;
+    const now30 = new Date(); now30.setDate(now30.getDate() - 30);
+    // merkazim activos = tuvieron al menos 1 peulá ese año
+    const activos = new Set(rows.map(r => r.merkaz)).size;
+    byYear[y] = { presencias, peulot, prom, activos };
+  });
+
+  const delta = (cur, prev, key) => {
+    if (!prev) return '';
+    const d = cur[key] - prev[key];
+    if (d === 0) return '';
+    const sign = d > 0 ? '▲' : '▼';
+    const cls = d > 0 ? 'up' : 'dn';
+    return `<span class="ann-delta ${cls}">${sign}${Math.abs(d)}</span>`;
+  };
+
+  document.getElementById('annual-tbl-body').innerHTML = years.map((y, i) => {
+    const cur = byYear[y];
+    const prev = byYear[years[i + 1]];
+    return `<tr>
+      <td>${y}</td>
+      <td>${cur.presencias.toLocaleString('es')}${delta(cur, prev, 'presencias')}</td>
+      <td>${cur.peulot}${delta(cur, prev, 'peulot')}</td>
+      <td>${cur.prom}${delta(cur, prev, 'prom')}</td>
+      <td>${cur.activos}${delta(cur, prev, 'activos')}</td>
+    </tr>`;
+  }).join('');
+}
 
 function showError(msg) {
   document.getElementById('loading').style.display = 'flex';
