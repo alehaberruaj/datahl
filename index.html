@@ -473,7 +473,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v24</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v25</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -628,7 +628,7 @@
               <tr>
                 <th data-col="m">Merkaz<i class="sort-arrow">↕</i></th>
                 <th data-col="cat">Cat.<i class="sort-arrow">↕</i></th>
-                <th data-col="status">Estado<i class="sort-arrow">↕</i></th>
+                <th data-col="status" id="tbl-col-status">Estado<i class="sort-arrow">↕</i></th>
                 <th data-col="fecha">Última peulá<i class="sort-arrow">↕</i></th>
                 <th class="tn" data-col="lastQty">Últ. asist.<i class="sort-arrow">↕</i></th>
                 <th class="tn" data-col="peulotPeriod">Peulot período<i class="sort-arrow">↕</i></th>
@@ -1315,12 +1315,17 @@ function renderTable() {
     }
   });
 
+  const yearVal = document.getElementById('sel-year').value;
+  const curY = new Date().getFullYear();
+  const showStatus = yearVal === 'all' || parseInt(yearVal) === curY;
+  document.getElementById('tbl-col-status').style.display = showStatus ? '' : 'none';
+
   const dotCol = { verde:'#1a7f5a', amarillo:'#e8c100', rojo:'#c0392b' };
   document.getElementById('tbl-body').innerHTML = rows.map(r => `
     <tr>
       <td><strong style="cursor:pointer;text-decoration:underline;text-underline-offset:3px" onclick="openMerkaz('${r.m.replace(/'/g,"\\'")}') ">${r.m}</strong></td>
       <td><span class="hl-badge hl-badge--${r.cat}">${r.cat}</span></td>
-      <td><span class="status-dot" style="background:${dotCol[r.status]}"></span>${r.statusLabel}</td>
+      <td style="display:${showStatus ? '' : 'none'}"><span class="status-dot" style="background:${dotCol[r.status]}"></span>${r.statusLabel}</td>
       <td style="font-family:'Space Mono',monospace;font-size:12px">${r.fecha}</td>
       <td class="tn">${r.lastQty}</td>
       <td class="tn">${r.peulotPeriod}</td>
