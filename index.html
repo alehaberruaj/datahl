@@ -473,7 +473,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v25</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v26</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -1393,8 +1393,9 @@ function renderMerkazDash(m, yearOverride) {
     if (r.dateObj < byWeekMap[k].date) byWeekMap[k].date = r.dateObj;
   });
   const sessions = Object.entries(byWeekMap).sort((a,b)=>a[0]>b[0]?1:-1);
-  const lastDate = sessions.at(-1)?.[1].date;
-  const daysSince = lastDate ? Math.round((now - lastDate) / 86400000) : 9999;
+  // status always from all-time last peulá, not filtered year
+  const allTimeLastDate = allMData.reduce((latest, r) => (!latest || r.dateObj > latest) ? r.dateObj : latest, null);
+  const daysSince = allTimeLastDate ? Math.round((now - allTimeLastDate) / 86400000) : 9999;
   const status = daysSince <= 30 ? 'Activo' : daysSince <= 90 ? 'Pausa' : 'Inactivo';
   const statusCol = daysSince <= 30 ? '#1a7f5a' : daysSince <= 90 ? '#e8c100' : '#c0392b';
   const weekVals = sessions.map(s => s[1].total);
