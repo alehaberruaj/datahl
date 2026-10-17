@@ -473,7 +473,7 @@
 
 <header class="hl-topbar">
   <div>
-    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v26</span></div>
+    <div class="hl-topbar__logo">DASH<span>TNU'A</span> <span style="font-size:10px;opacity:.4;font-family:var(--hl-f-mono)">v27</span></div>
     <div class="hl-topbar__sub" style="max-width:520px;line-height:1.5;font-style:italic">"Lo que no se define no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre." — <span style="font-style:normal">Lord Kelvin</span></div>
   </div>
   <div class="hl-topbar__right">
@@ -992,7 +992,22 @@ function renderMonthly(data) {
       byWeekMerkaz[r.merkaz][k] = (byWeekMerkaz[r.merkaz][k] || 0) + r.cantidad;
     }
   });
-  const sorted = Object.keys(weekDate).sort();
+  // Fill gaps: generate every ISO week from first to last
+  const existingKeys = Object.keys(weekDate).sort();
+  let sorted = existingKeys;
+  if (existingKeys.length > 1) {
+    const allKeys = [];
+    let cur = new Date(weekDate[existingKeys[0]]);
+    const lastD = weekDate[existingKeys[existingKeys.length - 1]];
+    while (cur <= lastD) {
+      const { week, year } = isoWeek(cur);
+      const k = `${year}-${String(week).padStart(2,'0')}`;
+      if (!weekDate[k]) weekDate[k] = new Date(cur);
+      if (!allKeys.length || allKeys[allKeys.length - 1] !== k) allKeys.push(k);
+      cur = new Date(cur.getTime() + 7 * 86400000);
+    }
+    sorted = allKeys.sort();
+  }
   chartMonthly = new Chart(document.getElementById('chart-monthly'), {
     type: 'bar',
     data: {
