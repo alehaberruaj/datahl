@@ -467,7 +467,29 @@
 
       .hl-footer { padding: 12px 16px; }
     }
+
+    /* ── Pestañas + Majané ── */
+    #nav-tabs { display:flex; gap:6px; padding:12px 32px 0; background:var(--hl-crema); }
+    .nav-tab { font-family:var(--hl-f-black); font-size:13px; text-transform:uppercase; padding:8px 18px;
+      border:2px solid var(--hl-ink); border-radius:var(--hl-r-pill); background:#fff; color:var(--hl-ink); cursor:pointer; }
+    .nav-tab.active { background:var(--hl-accent); box-shadow:0 3px 0 var(--hl-ink); }
+    #majane { display:none; }
+    #app.view-majane > :not(#nav-tabs):not(#majane) { display:none !important; }
+    #app.view-majane > #majane { display:block; }
+    #majane .mj-take { font-size:16px; line-height:1.5; max-width:75ch; padding:20px 32px 0; }
+    #majane .mj-stamp { font-family:var(--hl-f-mono); font-size:11px; color:var(--hl-muted); padding:4px 32px 0; }
+    #majane .mj-chart { position:relative; } #majane .mj-chart svg { display:block; width:100%; }
+    #majane .mj-tip { position:absolute; top:8px; pointer-events:none; background:#fff; border:2px solid var(--hl-ink); border-radius:8px; padding:6px 8px; font-size:12px; line-height:1.4; white-space:nowrap; z-index:2; }
+    #majane .mj-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+    #majane .mj-mini { border:2px solid var(--hl-tint); border-radius:var(--hl-r-field); padding:8px; cursor:pointer; background:#fff; text-align:left; font:inherit; color:inherit; }
+    #majane .mj-mini.on { border-color:var(--hl-ink); background:var(--hl-tint); }
+    #majane .mj-mini .t { font-size:13px; font-weight:700; } #majane .mj-mini .s { font-family:var(--hl-f-mono); font-size:10px; color:var(--hl-muted); }
+    #majane .hl-table tbody tr { cursor:pointer; } #majane .hl-table tr.sel td { background:var(--hl-tint); font-weight:700; }
+    #majane .hl-table th { cursor:default; } #majane .low { color:var(--hl-muted); }
+    #majane details { font-size:13px; line-height:1.5; padding:16px 24px; } #majane details p { margin:6px 0; }
+    #majane .mj-good { color:#1a7f5a; } #majane .mj-bad { color:var(--hl-error); }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 </head>
 <body>
 
@@ -501,6 +523,50 @@
 </div>
 
 <div id="app">
+
+  <div id="nav-tabs">
+    <button class="nav-tab active" data-view="asistencia">Asistencia</button>
+    <button class="nav-tab" data-view="majane">Majané Kaitz</button>
+  </div>
+  <div id="majane">
+    <p class="mj-take" id="mj-take"></p>
+    <div class="mj-stamp" id="mj-stamp"></div>
+    <div class="filterbar" style="margin-top:16px">
+      <label>Ciudad</label><select id="mj-city"></select>
+      <div class="sep"></div>
+      <label>Rol</label>
+      <select id="mj-role"><option value="Todos">Todos (janijim y madrijim)</option><option value="Janij/a">Janijim</option><option value="Madrij/a">Madrijim</option></select>
+      <div class="sep"></div>
+      <label>Gráfico</label>
+      <div class="cat-tabs"><button class="cat-tab active" id="mj-v-acum">Acumulado</button><button class="cat-tab" id="mj-v-nuevos">Nuevos por semana</button></div>
+      <div class="sep"></div>
+      <label>Años</label><div class="pill-bar" id="mj-years"></div>
+    </div>
+    <div class="kpi-row" id="mj-kpis"></div>
+    <div class="content">
+      <div class="hl-panel"><div class="hl-panel__head"><div><div class="hl-panel__title">Cómo venía la inscripción en cada fecha</div>
+        <div class="hl-panel__sub">Inscriptos acumulados al cierre de cada semana, alineados por fecha del calendario. La línea punteada es la proyección de 2027.</div></div></div>
+        <div class="hl-panel__body"><div class="mj-chart" id="mj-chart-cum"></div></div></div>
+      <div class="hl-panel"><div class="hl-panel__head"><div><div class="hl-panel__title">Total de inscriptos por año</div>
+        <div class="hl-panel__sub">Total al cierre de cada edición; para 2027, lo inscripto hasta hoy más lo proyectado (con su rango).</div></div></div>
+        <div class="hl-panel__body"><div class="mj-chart" id="mj-chart-tot"></div></div></div>
+      <div class="hl-panel"><div class="hl-panel__head"><div><div class="hl-panel__title">Ciudad por ciudad</div>
+        <div class="hl-panel__sub">Acumulado semanal de cada ciudad. Tocá una para filtrar todo.</div></div></div>
+        <div class="hl-panel__body"><div class="mj-grid" id="mj-grid"></div></div></div>
+      <div class="hl-panel"><div class="hl-panel__head"><div><div class="hl-panel__title">Tabla: totales por año y proyección 2027</div></div></div>
+        <div class="hl-panel__body" style="padding:0"><div class="table-wrap"><table class="hl-table"><thead><tr><th>Ciudad</th>
+          <th class="tn">2022</th><th class="tn">2023</th><th class="tn">2024</th><th class="tn">2025</th><th class="tn">2026</th><th class="tn">2027 hoy</th><th class="tn">Proyección 2027</th><th class="tn">Rango</th><th class="tn">Confianza</th></tr></thead>
+          <tbody id="mj-tbody"></tbody></table></div></div></div>
+      <div class="hl-panel"><details><summary style="font-family:var(--hl-f-black);cursor:pointer">Cómo se calculó y qué tener en cuenta</summary>
+        <p><b>Qué se cuenta.</b> Una inscripción es una ficha de participante (janij o madrij). Si la misma persona se inscribió más de una vez, cuenta una vez, con su primera fecha. Solo se consideran las inscripciones hasta el inicio de cada Majané.</p>
+        <p><b>Semanas.</b> Cada semana dura 7 días y se cuentan desde el 27 de septiembre, así todas las ediciones se comparan en la misma fecha de calendario. La línea “hoy” marca la fecha de la última inscripción de 2027. La primera columna incluye todo lo anterior al 27 de septiembre. Los gráficos terminan el 3 de enero, el inicio del Majané 2027.</p>
+        <p><b>Comparación a la misma fecha.</b> Las comparaciones “a la misma fecha” y las proyecciones consideran solo el período regular de inscripción de cada edición, para que sean comparables con 2027.</p>
+        <p><b>Proyección.</b> Para cada ciudad se divide lo inscripto hoy por la fracción del total final que ya estaba inscripta a esta fecha en 2023, 2025 y 2026. El valor central es la mediana y el rango va del mínimo al máximo. En cada año de referencia solo se cuentan las inscripciones hasta el 2 de enero. 2022 y 2024 no se usan como referencia porque abrieron la inscripción tarde. Las ciudades con menos de 25 inscriptos usan su participación histórica en el total y tienen confianza baja. La suma de las ciudades da más que la proyección total, porque cada una se estima por separado.</p>
+        <p><b>Límites.</b> Se asume que la inscripción llega hasta el 2 de enero. Las ediciones anteriores se alinean por fecha del calendario, no por su fecha de inicio. Si el cierre este año es más temprano, el total final será menor.</p>
+        <p><b>Ciudades.</b> Beit Israel (hasta 2025) y Metzada (2026–2027) se muestran juntas como Buenos Aires. El formulario 2027 ofrece seis centros más “Otro”, por eso Kesher, Bariloche y otras ciudades figuran sin inscriptos en 2027; “Otras ciudades” agrupa las respuestas “Otro”.</p>
+      </details></div>
+    </div>
+  </div>
 
   <div class="filterbar">
     <label>Año</label>
@@ -1581,6 +1647,166 @@ function showError(msg) {
   document.getElementById('loading').style.display = 'flex';
   document.getElementById('loading').innerHTML = `<p class="error-box">✳ ${msg}</p>`;
 }
+</script>
+<script>
+(function () {
+  var COL = { 2022: '#8d96b8', 2023: '#5f4ea3', 2024: '#d0648f', 2025: '#2456a6', 2026: '#c9a400', 2027: '#1c2a5e' };
+  var YEARS = [2022, 2023, 2024, 2025, 2026, 2027], ALL = 'Todas las ciudades';
+  var D = null, S = { city: ALL, role: 'Todos', vista: 'acum', anios: YEARS.slice() };
+  var $ = function (id) { return document.getElementById(id); };
+  var NS = 'http://www.w3.org/2000/svg';
+  function sv(tag, a, kids) { var e = document.createElementNS(NS, tag); Object.keys(a || {}).forEach(function (k) { e.setAttribute(k, a[k]); }); (kids || []).forEach(function (c) { e.append(c); }); return e; }
+  function tx(x, y, t, a) { var e = sv('text', Object.assign({ x: x, y: y, 'font-size': '11', fill: '#5f6a99' }, a || {})); e.textContent = t; return e; }
+  function niceMax(v) { return d3.scaleLinear().domain([0, v]).nice(4).domain()[1]; }
+  var roleName = function (r) { return r === 'Todos' ? 'todos los roles' : r === 'Janij/a' ? 'janijim' : 'madrijim'; };
+
+  document.querySelectorAll('.nav-tab').forEach(function (b) {
+    b.onclick = function () {
+      document.querySelectorAll('.nav-tab').forEach(function (t) { t.classList.toggle('active', t === b); });
+      $('app').classList.toggle('view-majane', b.dataset.view === 'majane');
+      if (b.dataset.view === 'majane') load();
+    };
+  });
+  function load() {
+    if (D) return render();
+    $('mj-take').textContent = 'Cargando…';
+    fetch('majane-data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { D = d; init(); render(); })
+      .catch(function (e) { $('mj-take').textContent = 'No se pudieron cargar los datos del Majané: ' + e.message; });
+  }
+  function init() {
+    var tot = {}; D.resumen.forEach(function (r) { if (r.role === 'Todos') tot[r.city] = (tot[r.city] || 0) + r.total; });
+    var cs = [ALL].concat(Object.keys(tot).filter(function (c) { return c !== ALL; }).sort(function (a, b) { return tot[b] - tot[a]; }));
+    cs.forEach(function (c) { $('mj-city').append(new Option(c, c)); });
+    $('mj-city').onchange = function () { S.city = this.value; render(); };
+    $('mj-role').onchange = function () { S.role = this.value; render(); };
+    $('mj-v-acum').onclick = function () { S.vista = 'acum'; render(); };
+    $('mj-v-nuevos').onclick = function () { S.vista = 'nuevos'; render(); };
+    YEARS.forEach(function (y) {
+      var b = document.createElement('span'); b.className = 'mpill on'; b.textContent = y; b.dataset.y = y;
+      b.style.borderColor = COL[y]; b.style.color = COL[y];
+      b.onclick = function () { var i = S.anios.indexOf(y); if (i >= 0) { if (S.anios.length > 1) S.anios.splice(i, 1); } else S.anios.push(y); S.anios.sort(); render(); };
+      $('mj-years').append(b);
+    });
+  }
+  function render() {
+    if (!D) return;
+    var sem = D.semanas, wc = sem[0].wc, wcur = sem[0].wcur, corte = sem[0].corte, wend = sem[sem.length - 1].w;
+    var sel = S.city === ALL ? 'todas las ciudades' : S.city;
+    $('mj-city').value = S.city; $('mj-role').value = S.role;
+    $('mj-v-acum').classList.toggle('active', S.vista === 'acum'); $('mj-v-nuevos').classList.toggle('active', S.vista === 'nuevos');
+    $('mj-years').querySelectorAll('.mpill').forEach(function (b) { var on = S.anios.indexOf(+b.dataset.y) >= 0; b.classList.toggle('on', on); b.classList.toggle('off', !on); });
+    var g = function (y) { return D.resumen.find(function (r) { return r.year === y && r.city === S.city && r.role === S.role; }); };
+    var pr = D.proyeccion.find(function (r) { return r.city === S.city && r.role === S.role; });
+    var hoy = g(2027) ? g(2027).al_corte_sin_pre : 0, ref = g(2026) ? g(2026).al_corte_sin_pre : 0;
+    var vp = ref ? Math.round((hoy / ref - 1) * 100) : null;
+    var t = 'Al ' + corte + ' hay <b>' + hoy + '</b> inscriptos en 2027 (' + sel + ', ' + roleName(S.role) + ')';
+    if (vp != null) t += ', <b>' + Math.abs(vp) + '%</b> ' + (vp >= 0 ? 'más' : 'menos') + ' que a esta misma fecha de 2026';
+    t += pr && pr.medio != null ? '. Al ritmo de años anteriores el cierre sería de unos <b>' + pr.medio + '</b> (entre <b>' + pr.bajo + '</b> y <b>' + pr.alto + '</b>).' : '.';
+    $('mj-take').innerHTML = t;
+    $('mj-stamp').textContent = 'Datos actualizados: ' + new Date(D.generado).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' });
+    var stat = function (l, v, m, c) { return '<div class="hl-stat"><div class="hl-stat__label">' + l + '</div><div class="hl-stat__value ' + (c || '') + '">' + v + '</div><div class="hl-stat__meta">' + m + '</div></div>'; };
+    $('mj-kpis').innerHTML =
+      stat('Inscriptos 2027', hoy, 'al ' + corte + ' · ' + sel + ', ' + roleName(S.role), 'highlight') +
+      stat('Misma fecha 2026', ref, 'a esta fecha del año pasado') +
+      stat('Variación', vp == null ? '—' : (vp > 0 ? '+' : '') + vp + '%', '2027 vs. 2026 a esta fecha', vp == null ? '' : vp >= 0 ? 'mj-good' : 'mj-bad') +
+      stat('Proyección 2027', pr && pr.medio != null ? pr.medio : '—', pr && pr.medio != null ? 'rango ' + pr.bajo + '–' + pr.alto + ' · confianza ' + pr.confianza : 'sin inscriptos 2027 en esta selección');
+    chartCum(sem, wc, wcur, wend, sel); chartTot(pr, sel); minis(wc, wend); tabla();
+  }
+  function chartCum(sem, wc, wcur, wend, sel) {
+    var acum = S.vista === 'acum', vk = acum ? 'acum' : 'nuevos';
+    var series = S.anios.map(function (y) { return { y: y, pts: D.curvas.filter(function (r) { return r.year === y && r.city === S.city && r.role === S.role; }).sort(function (a, b) { return a.w - b.w; }) }; }).filter(function (s) { return s.pts.length; });
+    var proj = D.proy_curva.filter(function (r) { return r.city === S.city && r.role === S.role; }).sort(function (a, b) { return a.w - b.w; });
+    var showP = acum && proj.length && S.anios.indexOf(2027) >= 0;
+    var ymax = d3.max(series, function (s) { return d3.max(s.pts, function (r) { return r[vk]; }); }) || 1;
+    if (showP) ymax = Math.max(ymax, d3.max(proj, function (r) { return r.alto; })); ymax = niceMax(ymax);
+    var el = $('mj-chart-cum'), W = Math.max(300, el.clientWidth || 700), H = Math.round(Math.min(380, Math.max(260, W * 0.45)));
+    var ml = 44, mr = 78, mt = 12, mb = 26, x = d3.scaleLinear().domain([0, wend]).range([ml, W - mr]), y = d3.scaleLinear().domain([0, ymax]).range([H - mb, mt]);
+    var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Inscriptos por semana, ' + sel });
+    y.ticks(4).forEach(function (v) { svg.append(sv('line', { x1: ml, x2: W - mr, y1: y(v), y2: y(v), stroke: '#dbe6f8' })); svg.append(tx(ml - 6, y(v) + 4, v, { 'text-anchor': 'end' })); });
+    [0, 4, 8, Math.round(wend * .8), wend].filter(function (v, i, a) { return a.indexOf(v) === i; }).forEach(function (w) { var s = sem.find(function (r) { return r.w === w; }); svg.append(tx(x(w), H - 8, s ? s.hasta : w, { 'text-anchor': w === 0 ? 'start' : 'middle' })); });
+    svg.append(sv('line', { x1: x(wc), x2: x(wc), y1: mt, y2: H - mb, stroke: '#8d96b8', 'stroke-dasharray': '3 3' })); svg.append(tx(x(wc) + 3, mt + 9, 'hoy'));
+    svg.append(sv('line', { x1: x(wend), x2: x(wend), y1: mt, y2: H - mb, stroke: '#8d96b8', 'stroke-dasharray': '3 3' })); svg.append(tx(x(wend) - 3, mt + 9, 'inicio 3 ene', { 'text-anchor': 'end' }));
+    if (showP) {
+      svg.append(sv('path', { d: d3.area().x(function (r) { return x(r.w); }).y0(function (r) { return y(r.bajo); }).y1(function (r) { return y(r.alto); })(proj), fill: COL[2027], opacity: '.18' }));
+      svg.append(sv('path', { d: d3.line().x(function (r) { return x(r.w); }).y(function (r) { return y(r.medio); })(proj), fill: 'none', stroke: COL[2027], 'stroke-width': '2', 'stroke-dasharray': '5 4' }));
+    }
+    var ln = d3.line().x(function (r) { return x(r.w); }).y(function (r) { return y(r[vk]); });
+    series.forEach(function (s) { svg.append(sv('path', { d: ln(s.pts), fill: 'none', stroke: COL[s.y], 'stroke-width': s.y === 2027 ? '3' : '2', 'stroke-linejoin': 'round' })); });
+    var labs = series.map(function (s) { var l = s.pts[s.pts.length - 1]; return { t: s.y + ' · ' + l[vk], y: y(l[vk]) + 4, c: COL[s.y] }; });
+    if (showP) { var lp = proj[proj.length - 1]; labs.push({ t: 'proy. ' + lp.medio, y: y(lp.medio) + 4, c: COL[2027] }); }
+    labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+    labs.forEach(function (l) { svg.append(tx(W - mr + 6, l.y, l.t, { fill: l.c, 'font-weight': '700' })); });
+    if (!series.length) svg.append(tx(W / 2, H / 2, 'Sin inscriptos en esta selección', { 'text-anchor': 'middle' }));
+    var tip = document.createElement('div'); tip.className = 'mj-tip'; tip.hidden = true;
+    var cur = sv('line', { y1: mt, y2: H - mb, stroke: '#1c2a5e', opacity: '.4', visibility: 'hidden' }); svg.append(cur);
+    var hit = sv('rect', { x: ml, y: mt, width: W - mr - ml, height: H - mt - mb, fill: 'transparent' });
+    hit.addEventListener('pointermove', function (ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width), w = Math.max(0, Math.min(wend, Math.round(x.invert(px))));
+      var s = sem.find(function (q) { return q.w === w; }), html = '<b>' + (s ? s.hasta : 'semana ' + w) + '</b>';
+      series.slice().reverse().forEach(function (se) { var pt = se.pts.find(function (q) { return q.w === w; }); html += '<div style="color:' + COL[se.y] + '">' + se.y + ': ' + (pt ? pt[vk] : '—') + '</div>'; });
+      if (showP && w > wcur) { var pp = proj.find(function (q) { return q.w === w; }); if (pp) html += '<div style="color:' + COL[2027] + '">2027 proy.: ' + pp.medio + ' (' + pp.bajo + '–' + pp.alto + ')</div>'; }
+      tip.innerHTML = html; tip.hidden = false; var bx = x(w) * (r.width / W) + 10; if (bx + (tip.offsetWidth || 120) > r.width) bx -= (tip.offsetWidth || 120) + 20; tip.style.left = Math.max(0, bx) + 'px';
+      cur.setAttribute('x1', x(w)); cur.setAttribute('x2', x(w)); cur.setAttribute('visibility', 'visible');
+    });
+    hit.addEventListener('pointerleave', function () { tip.hidden = true; cur.setAttribute('visibility', 'hidden'); });
+    svg.append(hit); el.replaceChildren(svg, tip);
+  }
+  function chartTot(pr, sel) {
+    var data = YEARS.map(function (yr) { var r = D.resumen.find(function (q) { return q.year === yr && q.city === S.city && q.role === S.role; }); return { y: yr, total: r ? r.total : 0 }; });
+    var hasP = pr && pr.medio != null, el = $('mj-chart-tot'), W = Math.max(300, el.clientWidth || 700), H = 280;
+    var top = niceMax(Math.max(d3.max(data, function (d) { return d.total; }), hasP ? pr.alto : 0, 1)), ml = 40, mb = 26, mt = 22;
+    var x = d3.scaleBand().domain(YEARS).range([ml, W - 8]).padding(.25), y = d3.scaleLinear().domain([0, top]).range([H - mb, mt]);
+    var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Total por año, ' + sel });
+    var pat = sv('pattern', { id: 'mjhatch', width: '6', height: '6', patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, [sv('line', { x1: '0', y1: '0', x2: '0', y2: '6', stroke: COL[2027], 'stroke-width': '3' })]);
+    svg.append(sv('defs', {}, [pat]));
+    y.ticks(4).forEach(function (v) { svg.append(sv('line', { x1: ml, x2: W - 8, y1: y(v), y2: y(v), stroke: '#dbe6f8' })); svg.append(tx(ml - 6, y(v) + 4, v, { 'text-anchor': 'end' })); });
+    data.forEach(function (d) {
+      var bx = x(d.y), bw = x.bandwidth(), p = d.y === 2027 && hasP, yy = p ? y(pr.alto) : y(d.total);
+      svg.append(sv('rect', { x: bx, y: y(d.total), width: bw, height: Math.max(0, y(0) - y(d.total)), rx: '3', fill: COL[d.y] }));
+      if (p) { svg.append(sv('rect', { x: bx, y: y(pr.medio), width: bw, height: Math.max(0, y(d.total) - y(pr.medio)), rx: '3', fill: 'url(#mjhatch)' })); svg.append(sv('line', { x1: bx + bw / 2, x2: bx + bw / 2, y1: y(pr.alto), y2: y(pr.bajo), stroke: '#1c2a5e', 'stroke-width': '2' })); }
+      svg.append(tx(bx + bw / 2, yy - 5, d.total + (p ? ' → ' + pr.medio : ''), { 'text-anchor': 'middle', 'font-size': '12', 'font-weight': '700', fill: '#1c2a5e' }));
+      svg.append(tx(bx + bw / 2, H - 8, d.y, { 'text-anchor': 'middle' }));
+    });
+    el.replaceChildren(svg);
+  }
+  function minis(wc, wend) {
+    var tot = {}; D.resumen.forEach(function (r) { if (r.role === 'Todos' && r.city !== ALL) tot[r.city] = (tot[r.city] || 0) + r.total; });
+    var list = [ALL].concat(Object.keys(tot).filter(function (c) { return tot[c] >= 25; }).sort(function (a, b) { return tot[b] - tot[a]; }));
+    $('mj-grid').replaceChildren.apply($('mj-grid'), list.map(function (c) {
+      var W = 240, H = 120, ml = 24, mr = 6, mt = 6, mb = 14;
+      var ser = S.anios.map(function (yr) { return { y: yr, pts: D.curvas.filter(function (r) { return r.year === yr && r.city === c && r.role === S.role; }).sort(function (a, b) { return a.w - b.w; }) }; }).filter(function (s) { return s.pts.length; });
+      var p = D.proyeccion.find(function (q) { return q.city === c && q.role === S.role; });
+      var top = niceMax(Math.max(1, d3.max(ser, function (s) { return d3.max(s.pts, function (r) { return r.acum; }); }) || 1));
+      var x = d3.scaleLinear().domain([0, wend]).range([ml, W - mr]), y = d3.scaleLinear().domain([0, top]).range([H - mb, mt]);
+      var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%' });
+      [0, top].forEach(function (v) { svg.append(tx(ml - 3, y(v) + 3, v, { 'text-anchor': 'end', 'font-size': '9' })); });
+      svg.append(sv('line', { x1: ml, x2: W - mr, y1: H - mb, y2: H - mb, stroke: '#dbe6f8' }));
+      svg.append(sv('line', { x1: x(wc), x2: x(wc), y1: mt, y2: H - mb, stroke: '#8d96b8', 'stroke-dasharray': '2 2' }));
+      var ln = d3.line().x(function (r) { return x(r.w); }).y(function (r) { return y(r.acum); });
+      ser.forEach(function (s) { svg.append(sv('path', { d: ln(s.pts), fill: 'none', stroke: COL[s.y], 'stroke-width': s.y === 2027 ? '2.5' : '1.5' })); });
+      var b = document.createElement('button'); b.className = 'mj-mini' + (c === S.city ? ' on' : '');
+      var tt = document.createElement('div'); tt.className = 't'; tt.textContent = c; b.append(tt); b.append(svg);
+      var s = document.createElement('div'); s.className = 's'; s.textContent = p && p.medio != null ? '2027: ' + p.actual + ' hoy → ~' + p.medio + ' (' + p.bajo + '–' + p.alto + ')' : '2027: ' + (p ? p.actual : 0) + ' hoy'; b.append(s);
+      b.onclick = function () { S.city = c; render(); }; return b;
+    }));
+  }
+  function tabla() {
+    var rows = []; D.resumen.forEach(function (r) { if (r.role === S.role && rows.indexOf(r.city) < 0) rows.push(r.city); });
+    D.proyeccion.forEach(function (p) { if (p.role === S.role && rows.indexOf(p.city) < 0) rows.push(p.city); });
+    var t26 = function (c) { var r = D.resumen.find(function (x) { return x.city === c && x.role === S.role && x.year === 2026; }); return r ? r.total : 0; };
+    rows.sort(function (a, b) { return a === ALL ? -1 : b === ALL ? 1 : t26(b) - t26(a); });
+    $('mj-tbody').replaceChildren.apply($('mj-tbody'), rows.map(function (c) {
+      var p = D.proyeccion.find(function (q) { return q.city === c && q.role === S.role; });
+      var v = function (yr) { var r = D.resumen.find(function (x) { return x.year === yr && x.city === c && x.role === S.role; }); return r ? r.total : null; };
+      var tr = document.createElement('tr'); if (c === S.city) tr.className = 'sel';
+      var cells = [c, v(2022), v(2023), v(2024), v(2025), v(2026), v(2027) == null ? 0 : v(2027), p && p.medio != null ? p.medio : null, p && p.medio != null ? p.bajo + '–' + p.alto : null, p ? p.confianza : null];
+      cells.forEach(function (x, i) { var td = document.createElement('td'); if (i) td.className = 'tn' + (i === 9 && x === 'baja' ? ' low' : ''); td.textContent = x == null ? '—' : x; tr.append(td); });
+      tr.onclick = function () { S.city = c; render(); }; return tr;
+    }));
+  }
+  window.addEventListener('resize', function () { if (D && $('app').classList.contains('view-majane')) render(); });
+})();
 </script>
 </body>
 </html>
