@@ -1863,7 +1863,8 @@ function showError(msg) {
     }
     var ln = d3.line().x(function (r) { return x(r.w); }).y(function (r) { return y(r[vk]); });
     series.forEach(function (s) { svg.append(sv('path', { d: ln(s.pts), fill: 'none', stroke: COL[s.y], 'stroke-width': s.y === 2027 ? '3' : '2', 'stroke-linejoin': 'round' })); });
-    var labs = series.map(function (s) { var l = s.pts[s.pts.length - 1]; return { t: s.y + ' · ' + l[vk], y: y(l[vk]) + 4, c: COL[s.y] }; });
+    var labs = series.filter(function (s) { return !(showP && s.y === 2027); }).map(function (s) { var l = s.pts[s.pts.length - 1]; return { t: s.y + ' · ' + l[vk], y: y(l[vk]) + 4, c: COL[s.y] }; });
+    if (showP) { var s27 = series.find(function (s) { return s.y === 2027; }); if (s27) { var l27 = s27.pts[s27.pts.length - 1]; svg.append(tx(x(l27.w) - 6, y(l27[vk]) - 8, 'hoy: ' + l27[vk], { 'text-anchor': 'end', fill: COL[2027], 'font-weight': '700' })); } }
     if (showP) { var lp = proj[proj.length - 1]; labs.push({ t: 'proy. ' + lp.medio, y: y(lp.medio) + 4, c: COL[2027] }); }
     labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
     labs.forEach(function (l) { svg.append(tx(W - mr + 6, l.y, l.t, { fill: l.c, 'font-weight': '700' })); });
