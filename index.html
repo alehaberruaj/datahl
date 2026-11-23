@@ -541,6 +541,7 @@
       <div class="cat-tabs"><button class="cat-tab active" id="mj-v-acum">Acumulado</button><button class="cat-tab" id="mj-v-nuevos">Nuevos por semana</button></div>
       <div class="sep"></div>
       <label>Años</label><div class="pill-bar" id="mj-years"></div>
+      <div style="margin-left:auto"><button class="hl-btn" id="mj-refresh">↺ ACTUALIZAR</button></div>
     </div>
     <div class="kpi-row" id="mj-kpis"></div>
     <div class="content">
@@ -1667,17 +1668,146 @@ function showError(msg) {
       if (b.dataset.view === 'majane') load();
     };
   });
-  function load() {
-    if (D) return render();
+  // ===== Motor: arma los datos del tablero a partir de las inscripciones =====
+  var MJ_SHEET = '1eTYWANTSmEZxAU3X2DxmEMuj8jbeiLNrwp8VXpx5F2g', MJ_TAB = 'Respuestas (Ruaj)';
+  var KEYS = [['Kesher (virtual)', /kesher/], ['Rosario (Etgar)', /etgar/], ['Córdoba (Shoresh)', /shoresh/], ['Mendoza (Kadima)', /kadima/],
+    ['San Juan (Dor Hemshej)', /dor hemshej/], ['Santa Fe (Macabi Hatzair)', /macabi/], ['Bahía Blanca (Hagshamá)', /hagshama/],
+    ['Buenos Aires (Beit Israel / Metzada)', /beit israel|metzada/], ['Bariloche (Iajad)', /iajad/], ['General Roca (Shemesh)', /shemesh/],
+    ['Catamarca (Jidush)', /jidush/], ['Rivera (Jaim Brande)', /jaim brande/], ['Neuquén (Nitzanim)', /nitzanim/],
+    ['San Luis (Lanetzaj)', /lanetzaj/], ['Tandil (Coaj Hanoar)', /coaj/]];
+  var norm = function (s) { return String(s || '').normalize('NFKD').toLowerCase().replace(/[̀-ͯ]/g, '').replace(/[^\x00-\x7f]/g, '').trim(); };
+  var DAY = 86400000, utc = function (y, m, d) { return Date.UTC(y, m - 1, d); };
+  var pyRound = function (x) { var f = Math.floor(x), d = x - f; return d < .5 ? f : d > .5 ? f + 1 : (f % 2 === 0 ? f : f + 1); };
+  var median = function (a) { a = a.slice().sort(function (p, q) { return p - q; }); var n = a.length, m = n >> 1; return n % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
+  var MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  var MESL = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+  // filas de la planilla 2027 [fecha, rol, nombre, apellido, ciudad] -> inscripciones únicas
+  function records2027(rows) {
+    var re = /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2})(?::(\d{2}))?$/, cands = new Map(), out = [];
+    rows.forEach(function (r) {
+      var m = re.exec(String(r[0] || '').trim()); if (!m) return;
+      var t = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +(m[6] || 0)));
+      var key = r[2] && r[3] && String(r[2]).trim() && String(r[3]).trim() ? norm(r[2]) + '|' + norm(r[3]) : null;
+      var k = t.getTime() + '#' + key;
+      if (!cands.has(k)) cands.set(k, { t: t, key: key, role: String(r[1] || '').trim(), q: r[4] });
+    });
+    var recs = Array.from(cands.values()).sort(function (a, b) { return a.t - b.t; }), seen = {};
+    recs.forEach(function (x) {
+      if (x.key && seen[x.key]) return; if (x.key) seen[x.key] = 1;
+      var role = x.role === 'Janij/a' || x.role === 'Madrij/a' ? x.role : '?', n = norm(x.q), city = null;
+      for (var i = 0; i < KEYS.length; i++) if (KEYS[i][1].test(n)) { city = KEYS[i][0]; break; }
+      out.push({ year: 2027, t: x.t.toISOString().slice(0, 19), role: role, city: city || 'Otras ciudades' });
+    });
+    return out;
+  }
+
+  function buildMajane(past, rec27, todayMs) {
+    var ALLC = ALL, CUR = 2027, VALID = [2023, 2025, 2026], UMBRAL = 25, ROLES = ['Todos', 'Janij/a', 'Madrij/a'];
+    var R = past.concat(rec27).map(function (x) {
+      var d = utc(+x.t.slice(0, 4), +x.t.slice(5, 7), +x.t.slice(8, 10));
+      return { year: x.year, d: d, role: x.role, city: x.city, pre: d < utc(x.year - 1, 8, 1) };
+    });
+    var anchor = function (y) { return utc(y - 1, 9, 27); };
+    var wk = function (x) { return Math.max(0, Math.ceil((x.d - anchor(x.year)) / (7 * DAY))); };
+    var capd = function (y) { return utc(y, 1, 2); };
+    // corte = fecha de hoy (acotada al período de inscripción 2026-10-01 .. 2027-01-02)
+    var t0 = new Date(todayMs), tod = utc(t0.getFullYear(), t0.getMonth() + 1, t0.getDate());
+    var corteCur = Math.min(Math.max(tod, utc(2026, 10, 1)), capd(CUR));
+    var cm = new Date(corteCur).getUTCMonth() + 1, cd = new Date(corteCur).getUTCDate();
+    var corte = function (y) { return cm >= 9 ? utc(y - 1, cm, cd) : utc(y, cm, cd); };
+    var WC = Math.ceil((corteCur - anchor(CUR)) / (7 * DAY)), WEND = Math.floor((capd(CUR) - anchor(CUR)) / (7 * DAY)) + 1;
+    var cities = Array.from(new Set(R.map(function (x) { return x.city; }))).sort(), CITIES = [ALLC].concat(cities);
+    var sel = function (y, c, r, pre) { return R.filter(function (x) { return x.year === y && (c === ALLC || x.city === c) && (r === 'Todos' || x.role === r) && (pre !== false || !x.pre); }); };
+    var curvas = [], resumen = [];
+    [2022, 2023, 2024, 2025, 2026, 2027].forEach(function (y) {
+      CITIES.forEach(function (c) { ROLES.forEach(function (r) {
+        var s = sel(y, c, r); if (!s.length) return;
+        var cnt = {}; s.forEach(function (x) { var w = wk(x); cnt[w] = (cnt[w] || 0) + 1; });
+        var cum = 0, last = y === CUR ? WC : WEND;
+        for (var w = 0; w <= last; w++) { cum += cnt[w] || 0; curvas.push({ year: y, city: c, role: r, w: w, nuevos: cnt[w] || 0, acum: cum }); }
+        var np = s.filter(function (x) { return !x.pre; });
+        resumen.push({ year: y, city: c, role: r, total: s.length, pre: s.length - np.length,
+          al_corte: s.filter(function (x) { return x.d <= corte(y); }).length,
+          al_corte_sin_pre: np.filter(function (x) { return x.d <= corte(y); }).length,
+          total_sin_pre: np.length, total_cap: np.filter(function (x) { return x.d <= capd(y); }).length });
+      }); });
+    });
+    var RES = {}; resumen.forEach(function (r) { RES[r.year + '|' + r.city + '|' + r.role] = r; });
+    var share = function (y, c, r) { var a = RES[y + '|' + c + '|' + r]; return !a || !a.total_cap ? null : a.al_corte_sin_pre / a.total_cap; };
+    var cumshape = function (y, c, r, w) { var s = sel(y, c, r, false).filter(function (x) { return x.d <= capd(y); }); if (!s.length) return null; return s.filter(function (x) { return wk(x) <= w; }).length / s.length; };
+    var ownRatios = function (c, r) { var cur = RES[CUR + '|' + c + '|' + r].al_corte_sin_pre; return VALID.filter(function (y) { return share(y, c, r); }).map(function (y) { return cur / share(y, c, r); }); };
+    var proy = [], totC = {};
+    ROLES.forEach(function (r) { if (!RES[CUR + '|' + ALLC + '|' + r]) return; var ps = ownRatios(ALLC, r); totC[r] = [Math.min.apply(null, ps), median(ps), Math.max.apply(null, ps)]; });
+    CITIES.forEach(function (c) { ROLES.forEach(function (r) {
+      var k = CUR + '|' + c + '|' + r; if (!RES[k]) return;
+      var cur = RES[k].al_corte_sin_pre, row = { city: c, role: r, actual: cur }, lo, mid, hi;
+      if (cur >= UMBRAL || c === ALLC) { var ps = ownRatios(c, r); lo = Math.min.apply(null, ps); mid = median(ps); hi = Math.max.apply(null, ps); row.metodo = 'ritmo propio'; }
+      else {
+        var sh = VALID.filter(function (y) { return RES[y + '|' + c + '|' + r]; }).map(function (y) { return RES[y + '|' + c + '|' + r].total_cap / RES[y + '|' + ALLC + '|' + r].total_cap; });
+        var m = sh.reduce(function (a, b) { return a + b; }, 0) / VALID.length;
+        lo = totC[r][0] * m; mid = totC[r][1] * m; hi = totC[r][2] * m; row.metodo = 'participación histórica';
+      }
+      row.bajo = Math.max(cur, pyRound(lo)); row.medio = Math.max(cur, pyRound(mid)); row.alto = Math.max(cur, pyRound(hi));
+      var rt = row.alto / Math.max(row.bajo, 1); row.confianza = rt <= 1.3 ? 'alta' : rt <= 1.8 ? 'media' : 'baja';
+      if (row.metodo !== 'ritmo propio' && c !== ALLC) row.confianza = row.actual < 10 ? 'baja' : 'media';
+      proy.push(row);
+    }); });
+    cities.forEach(function (c) { ROLES.forEach(function (r) {
+      if (!RES[CUR + '|' + c + '|' + r] && VALID.some(function (y) { return RES[y + '|' + c + '|' + r]; }))
+        proy.push({ city: c, role: r, actual: 0, metodo: 'sin inscriptos 2027', bajo: null, medio: null, alto: null, confianza: null });
+    }); });
+    var proy_curva = [];
+    proy.forEach(function (p) {
+      if (p.bajo == null) return;
+      var shp = {};
+      for (var w = WC; w <= WEND; w++) {
+        var v = VALID.map(function (y) { return cumshape(y, p.metodo === 'ritmo propio' ? p.city : ALLC, p.role, w); }).filter(function (a) { return a != null; });
+        shp[w] = median(v);
+      }
+      var s0 = shp[WC];
+      for (var w2 = WC; w2 <= WEND; w2++) {
+        var f = s0 >= 1 ? 0 : (shp[w2] - s0) / (1 - s0), a0 = p.actual, rd = function (v) { return Math.round(v * 10) / 10; };
+        proy_curva.push({ city: p.city, role: p.role, w: w2, bajo: rd(a0 + (p.bajo - a0) * f), medio: rd(a0 + (p.medio - a0) * f), alto: rd(a0 + (p.alto - a0) * f) });
+      }
+    });
+    var semanas = [], cdate = new Date(corteCur);
+    for (var w3 = 0; w3 <= WEND; w3++) {
+      var dd = new Date(utc(2025, 9, 27) + 7 * w3 * DAY);
+      semanas.push({ w: w3, hasta: (w3 === 0 ? 'hasta ' : '') + dd.getUTCDate() + ' ' + MES[dd.getUTCMonth()], wc: WC, wcur: WC, corte: cdate.getUTCDate() + ' de ' + MESL[cdate.getUTCMonth()] });
+    }
+    return { curvas: curvas, resumen: resumen, proyeccion: proy, proy_curva: proy_curva, semanas: semanas };
+  }
+
+  // lee la planilla 2027 con la sesión de Google (solo fecha, rol, nombre, apellido y ciudad)
+  function fetchSheet() {
+    if (typeof accessToken === 'undefined' || !accessToken) return Promise.reject(new Error('sin sesión de Google'));
+    var q = ['B2:B', 'J2:L', 'Q2:Q'].map(function (r) { return 'ranges=' + encodeURIComponent("'" + MJ_TAB + "'!" + r); }).join('&');
+    return fetch('https://sheets.googleapis.com/v4/spreadsheets/' + MJ_SHEET + '/values:batchGet?majorDimension=ROWS&' + q, { headers: { Authorization: 'Bearer ' + accessToken } })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) {
+        var v = j.valueRanges.map(function (x) { return x.values || []; }), n = Math.max(v[0].length, v[1].length, v[2].length), rows = [];
+        for (var i = 0; i < n; i++) { var a = v[0][i] || [], b = v[1][i] || [], c = v[2][i] || []; rows.push([a[0], b[0], b[1], b[2], c[0]]); }
+        return rows;
+      });
+  }
+  function load(force) {
+    if (D && !force) return render();
     $('mj-take').textContent = 'Cargando…';
-    fetch('majane-data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (d) { D = d; init(); render(); })
+    var past = fetch('majane-past.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+    Promise.all([past, fetchSheet()]).then(function (a) {
+      var built = buildMajane(a[0], records2027(a[1]), Date.now()); built.generado = new Date().toISOString(); built.vivo = true; return built;
+    }).catch(function (e) {
+      // sin acceso a la planilla: usa la copia guardada
+      return fetch('majane-data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { d.vivo = false; d.motivo = e.message; return d; });
+    }).then(function (d) { var first = !D; D = d; if (first) init(); render(); })
       .catch(function (e) { $('mj-take').textContent = 'No se pudieron cargar los datos del Majané: ' + e.message; });
   }
   function init() {
     var tot = {}; D.resumen.forEach(function (r) { if (r.role === 'Todos') tot[r.city] = (tot[r.city] || 0) + r.total; });
     var cs = [ALL].concat(Object.keys(tot).filter(function (c) { return c !== ALL; }).sort(function (a, b) { return tot[b] - tot[a]; }));
     cs.forEach(function (c) { $('mj-city').append(new Option(c, c)); });
+    $('mj-refresh').onclick = function () { load(true); };
     $('mj-city').onchange = function () { S.city = this.value; render(); };
     $('mj-role').onchange = function () { S.role = this.value; render(); };
     $('mj-v-acum').onclick = function () { S.vista = 'acum'; render(); };
@@ -1704,7 +1834,7 @@ function showError(msg) {
     if (vp != null) t += ', <b>' + Math.abs(vp) + '%</b> ' + (vp >= 0 ? 'más' : 'menos') + ' que a esta misma fecha de 2026';
     t += pr && pr.medio != null ? '. Al ritmo de años anteriores el cierre sería de unos <b>' + pr.medio + '</b> (entre <b>' + pr.bajo + '</b> y <b>' + pr.alto + '</b>).' : '.';
     $('mj-take').innerHTML = t;
-    $('mj-stamp').textContent = 'Datos actualizados: ' + new Date(D.generado).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' });
+    $('mj-stamp').textContent = D.vivo ? 'Leído de la planilla de inscripciones al abrir esta pestaña: ' + new Date(D.generado).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' }) : 'Sin acceso a la planilla (' + (D.motivo || '') + '). Copia guardada del ' + new Date(D.generado).toLocaleString('es-AR', { dateStyle: 'long' });
     var stat = function (l, v, m, c) { return '<div class="hl-stat"><div class="hl-stat__label">' + l + '</div><div class="hl-stat__value ' + (c || '') + '">' + v + '</div><div class="hl-stat__meta">' + m + '</div></div>'; };
     $('mj-kpis').innerHTML =
       stat('Inscriptos 2027', hoy, 'al ' + corte + ' · ' + sel + ', ' + roleName(S.role), 'highlight') +
